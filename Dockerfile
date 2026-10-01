@@ -1,5 +1,5 @@
 # Stage 1: Builder
-FROM python:3.14-slim as builder
+FROM python:3.13-slim as builder
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-dev
 
 # Stage 2: Runtime
-FROM python:3.14-slim
+FROM python:3.13-slim
 
 # Create non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser

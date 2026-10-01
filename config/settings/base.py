@@ -68,7 +68,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",
     "django_prometheus",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     "apps.core",
     "apps.outbox",
     "apps.dashboard",
@@ -85,24 +84,24 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
@@ -125,16 +124,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -201,7 +200,9 @@ SPECTACULAR_SETTINGS = {
 
 # Celery
 CELERY_BROKER_URL = f"amqp://{_settings.RABBITMQ_USER}:{_settings.RABBITMQ_PASSWORD}@{_settings.RABBITMQ_HOST}:{_settings.RABBITMQ_PORT}/{_settings.RABBITMQ_VHOST}"
-CELERY_RESULT_BACKEND = f"redis://{_settings.REDIS_HOST}:{_settings.REDIS_PORT}/{_settings.REDIS_DB}"
+CELERY_RESULT_BACKEND = (
+    f"redis://{_settings.REDIS_HOST}:{_settings.REDIS_PORT}/{_settings.REDIS_DB}"
+)
 CELERY_TASK_DEFAULT_QUEUE_TYPE = "quorum"
 CELERY_BROKER_TRANSPORT_OPTIONS = {"confirm_publish": True}
 CELERY_ACKS_LATE = True
@@ -212,7 +213,7 @@ CELERY_TASK_PREFETCH_LIMIT = 1
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
 MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    "default": {
+        "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
 }

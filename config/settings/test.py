@@ -1,4 +1,4 @@
-from .base import *  # noqa: F401
+from .base import *  # noqa: F403
 
 DEBUG = True
 SECRET_KEY = "test-secret-key"
@@ -6,7 +6,7 @@ SECRET_KEY = "test-secret-key"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "test.db.sqlite3",
+        "NAME": BASE_DIR / "test.db.sqlite3",  # noqa: F405
     }
 }
 

@@ -13,7 +13,7 @@ Precisamos escolher uma stack tecnológica moderna e estável para implementar a
 Escolhemos as seguintes versões (confirmadas out/2026):
 
 ### Backend
-- Python 3.14 (fallback 3.13 se dependência falhar)
+- Python 3.13 (ruff e mypy não suportam 3.14 ainda)
 - Django 6.1 (fallback 6.0, fallback 5.2 LTS)
 - DRF 3.18+
 - Celery 5.6
@@ -66,9 +66,10 @@ Escolhemos as seguintes versões (confirmadas out/2026):
 
 ## Ajustes Feitos Durante a Fase 0
 
-- Pydantic: 2.10+ → 2.12+ (para suportar Python 3.14)
+- Python: 3.14 → 3.13 (ruff e mypy não suportam 3.14 ainda)
+- Pydantic: 2.10+ → 2.12+ (para suportar Python 3.14/3.13)
 - pydantic-settings: 2.7+ → 2.6+ (compatível com pydantic 2.12)
-- OpenTelemetry: 1.30+ → 1.27+ (para suportar Python 3.14)
-- OpenTelemetry instrumentation: 0.50b0+ → 0.47b0+ (para suportar Python 3.14)
+- OpenTelemetry: 1.30+ → 1.27+ (para suportar Python 3.14/3.13)
+- OpenTelemetry instrumentation: 0.50b0+ → 0.47b0+ (para suportar Python 3.14/3.13)
 - structlog: 25.0+ → 25.1+ (versão disponível)
 - import-linter: 1.14+ → 1.12+ (versão disponível)
