@@ -1,0 +1,109 @@
+[project]
+name = "orquestra"
+version = "0.1.0"
+description = "Plataforma de processamento de pedidos orientada a eventos com saga orquestrada"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "django>=6.1,<6.2",
+    "djangorestframework>=3.18,<3.19",
+    "drf-spectacular>=0.28,<0.29",
+    "djangorestframework-simplejwt>=5.4,<5.5",
+    "psycopg[binary]>=3.2,<3.3",
+    "pydantic>=2.12,<2.13",
+    "pydantic-settings>=2.6,<2.7",
+    "python-dotenv>=1.0,<1.1",
+    "gunicorn>=23.0,<23.1",
+    "whitenoise>=6.9,<6.10",
+    "celery>=5.6,<5.7",
+    "redis>=5.2,<5.3",
+    "structlog~=25.1",
+    "opentelemetry-api~=1.27",
+    "opentelemetry-sdk~=1.27",
+    "opentelemetry-instrumentation-django~=0.47b0",
+    "opentelemetry-instrumentation-celery~=0.47b0",
+    "opentelemetry-instrumentation-psycopg~=0.47b0",
+    "opentelemetry-instrumentation-redis~=0.47b0",
+    "opentelemetry-exporter-otlp~=1.27",
+    "django-prometheus>=2.3,<2.4",
+    "django-tailwind-cli>=4.8,<4.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.9,<0.10",
+    "mypy>=1.14,<1.15",
+    "django-stubs>=5.1,<5.2",
+    "djangorestframework-stubs>=3.15,<3.16",
+    "pytest>=8.3,<8.4",
+    "pytest-django>=4.10,<4.11",
+    "pytest-cov>=6.0,<6.1",
+    "factory-boy>=3.3,<3.4",
+    "poethepoet>=0.31,<0.32",
+    "import-linter~=1.12",
+    "pre-commit>=4.1,<4.2",
+    "pip-audit>=2.8,<2.9",
+]
+
+[build-system]
+requires = ["hatchling>=1.27,<1.28"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.9,<0.10",
+    "mypy>=1.14,<1.15",
+    "django-stubs>=5.1,<5.2",
+    "djangorestframework-stubs>=3.15,<3.16",
+    "pytest>=8.3,<8.4",
+    "pytest-django>=4.10,<4.11",
+    "pytest-cov>=6.0,<6.1",
+    "factory-boy>=3.3,<3.4",
+    "poethepoet>=0.31,<0.32",
+    "import-linter~=1.12",
+    "pre-commit>=4.1,<4.2",
+    "pip-audit>=2.8,<2.9",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "DTZ", "T10", "EM", "ISC", "ICN", "G", "PIE", "T20", "PT", "Q", "RSE", "RET", "SIM", "TID", "TCH", "ARG", "PTH", "PL", "TRY", "FLY", "PERF", "RUF"]
+ignore = ["PLR0913", "PLR0912", "PLR0915", "TRY003"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["config", "apps"]
+
+[tool.mypy]
+python_version = "3.14"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.local"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py", "*_test.py"]
+addopts = "--cov=apps --cov-report=term-missing --cov-report=html"
+
+[tool.poe.tasks]
+check = { shell = "ruff format --check . && ruff check . && mypy . && pytest && python manage.py check && python manage.py makemigrations --check --dry-run && import-linter" }
+smoke = { shell = "python manage.py smoke_test" }
+up = { shell = "docker compose --profile lite up -d" }
+down = { shell = "docker compose down" }
+demo = { shell = "docker compose --profile lite up -d && python manage.py seed_demo && python manage.py runserver" }
+
+[tool.importlinter]
+root_modules = ["config", "apps"]
+
+[[tool.importlinter.groups]]
+name = "domain-isolation"
+modules = ["apps.orders", "apps.inventory", "apps.payments", "apps.notifications", "apps.audit", "apps.orchestrator"]
+forbidden_modules = ["apps.orders.services", "apps.inventory.services", "apps.payments.services"]
+contain = true

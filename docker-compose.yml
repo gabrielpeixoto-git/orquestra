@@ -1,0 +1,222 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:18
+    container_name: orquestra-db
+    environment:
+      POSTGRES_DB: orquestra
+      POSTGRES_USER: orquestra
+      POSTGRES_PASSWORD: orquestra
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orquestra"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orquestra-net
+
+  redis:
+    image: redis:8
+    container_name: orquestra-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orquestra-net
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: orquestra-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orquestra-net
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orquestra-api
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SECRET_KEY: ${SECRET_KEY}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: orquestra
+      DB_USER: orquestra
+      DB_PASSWORD: orquestra
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orquestra-net
+    profiles:
+      - lite
+      - distributed
+
+  relay:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orquestra-relay
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SECRET_KEY: ${SECRET_KEY}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: orquestra
+      DB_USER: orquestra
+      DB_PASSWORD: orquestra
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    command: python manage.py relay_outbox
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orquestra-net
+    profiles:
+      - lite
+      - distributed
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orquestra-worker
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SECRET_KEY: ${SECRET_KEY}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: orquestra
+      DB_USER: orquestra
+      DB_PASSWORD: orquestra
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    command: celery -A config worker --loglevel=info
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orquestra-net
+    profiles:
+      - lite
+
+  beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orquestra-beat
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SECRET_KEY: ${SECRET_KEY}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: orquestra
+      DB_USER: orquestra
+      DB_PASSWORD: orquestra
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    command: celery -A config beat --loglevel=info
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orquestra-net
+    profiles:
+      - lite
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: orquestra-jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    networks:
+      - orquestra-net
+    profiles:
+      - obs
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: orquestra-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - orquestra-net
+    profiles:
+      - obs
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: orquestra-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deploy/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./deploy/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - orquestra-net
+    profiles:
+      - obs
+
+volumes:
+  postgres_data:
+  grafana_data:
+
+networks:
+  orquestra-net:
+    driver: bridge
