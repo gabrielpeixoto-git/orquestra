@@ -12,8 +12,8 @@
 - [x] Configurar pre-commit hooks
 - [x] Criar CI mínimo no GitHub Actions
 - [x] Criar documentação (AGENTS.md, ARCHITECTURE.md, ROADMAP.md, ADR-0001)
-- [ ] Criar .gitignore e commit inicial
-- [ ] Executar uv run poe check e validar
+- [x] Criar .gitignore e commit inicial
+- [x] Executar uv run poe check e validar
 
 **Critério de Aceite:** `uv run poe up` + `/health/ready` = 200, `poe check` verde
 
