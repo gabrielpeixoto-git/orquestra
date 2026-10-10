@@ -1,0 +1,231 @@
+/* Orquestra Dashboard Styles */
+
+/* Custom CSS Variables */
+:root {
+  /* Light Mode */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f3f4f6;
+  --color-bg-tertiary: #e5e7eb;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-border: #e5e7eb;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* Status Colors */
+  --status-pending: #f59e0b;
+  --status-confirmed: #10b981;
+  --status-cancelled: #ef4444;
+  --status-failed: #ef4444;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark Mode */
+    --color-bg-primary: #0f172a;
+    --color-bg-secondary: #1e293b;
+    --color-bg-tertiary: #334155;
+    --color-text-primary: #f9fafb;
+    --color-text-secondary: #9ca3af;
+    --color-border: #334155;
+    --color-success: #34d399;
+    --color-warning: #fbbf24;
+    --color-error: #f87171;
+    --color-info: #60a5fa;
+  }
+}
+
+/* Base Styles */
+body {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Card Styles */
+.card {
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Table Styles */
+.table-container {
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.table-header {
+  background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table-row {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+/* Status Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+@media (prefers-color-scheme: dark) {
+  .badge-pending {
+    background-color: #78350f;
+    color: #fcd34d;
+  }
+}
+
+.badge-confirmed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+@media (prefers-color-scheme: dark) {
+  .badge-confirmed {
+    background-color: #064e3b;
+    color: #6ee7b7;
+  }
+}
+
+.badge-cancelled,
+.badge-failed {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+@media (prefers-color-scheme: dark) {
+  .badge-cancelled,
+  .badge-failed {
+    background-color: #7f1d1d;
+    color: #fca5a5;
+  }
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--color-border);
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -1.75rem;
+  top: 0.25rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background-color: var(--color-info);
+  border: 2px solid var(--color-bg-primary);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Loading Spinner */
+.spinner {
+  border: 3px solid var(--color-bg-tertiary);
+  border-top-color: var(--color-info);
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .table-container {
+    overflow-x: auto;
+  }
+}
+
+/* HTMX Loading Indicator */
+.htmx-indicator {
+  display: none;
+  opacity: 0;
+  transition: opacity 200ms ease-in;
+}
+
+.htmx-request .htmx-indicator {
+  display: inline-block;
+  opacity: 1;
+}
+
+.htmx-request.htmx-indicator {
+  display: inline-block;
+  opacity: 1;
+}
+
+/* HTMX Swap Animation */
+.htmx-swapping {
+  opacity: 0.5;
+  transition: opacity 200ms ease-in;
+}

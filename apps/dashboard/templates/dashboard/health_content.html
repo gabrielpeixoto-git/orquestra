@@ -1,0 +1,66 @@
+{% if health_data %}
+<!-- Overall Status -->
+<div class="card p-6 lg:col-span-3">
+    <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Status Geral</h3>
+        <span class="w-3 h-3 {% if health_data.status == 'healthy' %}bg-green-500{% else %}bg-red-500{% endif %} rounded-full"></span>
+    </div>
+    <p class="text-2xl font-bold mt-2 capitalize">{{ health_data.status }}</p>
+</div>
+
+<!-- Database -->
+<div class="card p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">Database</h3>
+        <span class="w-3 h-3 {% if health_data.services.database.status == 'healthy' %}bg-green-500{% else %}bg-red-500{% endif %} rounded-full"></span>
+    </div>
+    <p class="text-sm text-gray-500 dark:text-gray-400">Status: {{ health_data.services.database.status|title }}</p>
+    {% if health_data.services.database.status == 'healthy' %}
+    <p class="text-sm text-gray-500 dark:text-gray-400">Latency: {{ health_data.services.database.latency_ms }}ms</p>
+    {% else %}
+    <p class="text-sm text-red-600 dark:text-red-400">Error: {{ health_data.services.database.error }}</p>
+    {% endif %}
+</div>
+
+<!-- Redis -->
+<div class="card p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">Redis</h3>
+        <span class="w-3 h-3 {% if health_data.services.redis.status == 'healthy' %}bg-green-500{% else %}bg-red-500{% endif %} rounded-full"></span>
+    </div>
+    <p class="text-sm text-gray-500 dark:text-gray-400">Status: {{ health_data.services.redis.status|title }}</p>
+    {% if health_data.services.redis.status != 'healthy' %}
+    <p class="text-sm text-red-600 dark:text-red-400">Error: {{ health_data.services.redis.error }}</p>
+    {% endif %}
+</div>
+
+<!-- RabbitMQ -->
+<div class="card p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">RabbitMQ</h3>
+        <span class="w-3 h-3 {% if health_data.services.rabbitmq.status == 'healthy' %}bg-green-500{% else %}bg-red-500{% endif %} rounded-full"></span>
+    </div>
+    <p class="text-sm text-gray-500 dark:text-gray-400">Status: {{ health_data.services.rabbitmq.status|title }}</p>
+    {% if health_data.services.rabbitmq.status != 'healthy' %}
+    <p class="text-sm text-red-600 dark:text-red-400">Error: {{ health_data.services.rabbitmq.error }}</p>
+    {% endif %}
+</div>
+
+<!-- Celery Workers -->
+<div class="card p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">Celery Workers</h3>
+        <span class="w-3 h-3 {% if health_data.services.celery_workers.status == 'healthy' %}bg-green-500{% else %}bg-red-500{% endif %} rounded-full"></span>
+    </div>
+    <p class="text-sm text-gray-500 dark:text-gray-400">Status: {{ health_data.services.celery_workers.status|title }}</p>
+    {% if health_data.services.celery_workers.status == 'healthy' %}
+    <p class="text-sm text-gray-500 dark:text-gray-400">Workers: {{ health_data.services.celery_workers.count }}</p>
+    {% else %}
+    <p class="text-sm text-red-600 dark:text-red-400">Error: {{ health_data.services.celery_workers.error }}</p>
+    {% endif %}
+</div>
+{% else %}
+<div class="card p-6">
+    <p class="text-gray-500 dark:text-gray-400">Não foi possível obter dados de saúde.</p>
+</div>
+{% endif %}

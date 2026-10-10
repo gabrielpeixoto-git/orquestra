@@ -70,3 +70,45 @@ jobs:
           REDIS_PORT: 6379
           RABBITMQ_HOST: localhost
           RABBITMQ_PORT: 5672
+
+      - name: Run tests
+        run: uv run pytest --cov=apps --cov-report=xml
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: orquestra
+          DB_USER: orquestra
+          DB_PASSWORD: orquestra
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          RABBITMQ_HOST: localhost
+          RABBITMQ_PORT: 5672
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+
+      - name: Run pip-audit
+        run: uv pip-audit
+
+      - name: Build Docker image
+        run: docker build -t orquestra:test .
+
+      - name: Check OpenAPI drift
+        run: |
+          uv run python manage.py spectacular --color --file schema.yml
+          if [ -f schema.yml ]; then
+            git diff --exit-code schema.yml || echo "OpenAPI schema changed, commit the new schema.yml"
+          fi
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Run actionlint
+        uses: reviewdog/action-actionlint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,70 @@
+{% extends "dashboard/base.html" %}
+
+{% block page_title %}Detalhe do Pedido {{ order.id|slice:":8" }}...{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Order Info -->
+    <div class="card p-6">
+        <h3 class="text-lg font-semibold mb-4">Informações do Pedido</h3>
+        <div class="space-y-4">
+            <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">ID</p>
+                <p class="font-mono text-sm">{{ order.id }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Cliente</p>
+                <p class="font-mono text-sm">{{ order.customer_id }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Status</p>
+                {% if order.status == 'PENDING' %}
+                <span class="badge badge-pending">PENDING</span>
+                {% elif order.status == 'CONFIRMED' %}
+                <span class="badge badge-confirmed">CONFIRMED</span>
+                {% elif order.status == 'CANCELLED' %}
+                <span class="badge badge-cancelled">CANCELLED</span>
+                {% else %}
+                <span class="badge badge-failed">FAILED</span>
+                {% endif %}
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Total</p>
+                <p class="font-semibold">R$ {{ order.total_amount }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Criado em</p>
+                <p>{{ order.created_at|date:"Y-m-d H:i:s" }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Atualizado em</p>
+                <p>{{ order.updated_at|date:"Y-m-d H:i:s" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="card p-6 lg:col-span-2">
+        <h3 class="text-lg font-semibold mb-4">Timeline da Saga ({{ messages|length }} eventos)</h3>
+        {% if messages %}
+        <div class="timeline">
+            {% for message in messages %}
+            <div class="timeline-item">
+                <div class="text-sm font-medium">{{ message.message_type }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ message.created_at|date:"Y-m-d H:i:s" }}
+                    {% if message.status == 'PUBLISHED' %}
+                    <span class="text-green-600 ml-2">✓ Publicado</span>
+                    {% else %}
+                    <span class="text-yellow-600 ml-2">⏳ Pendente</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 dark:text-gray-400">Nenhum evento registrado</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

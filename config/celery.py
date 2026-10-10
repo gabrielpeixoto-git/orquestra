@@ -12,6 +12,17 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 app.autodiscover_tasks()
 
+# Configure logging after Django settings are loaded
+from apps.core.logging_config import configure_logging
+
+configure_logging()
+
+# Configure OpenTelemetry after Django settings are loaded
+from apps.core.otel_config import configure_opentelemetry
+
+configure_opentelemetry()
+
+
 app.conf.update(
     task_serializer="json",
     accept_content=["json"],
@@ -21,4 +32,48 @@ app.conf.update(
     task_track_started=True,
     task_time_limit=30 * 60,
     task_soft_time_limit=25 * 60,
+    broker_url="amqp://guest:guest@localhost:5672/%2F",
+    result_backend="redis://localhost:6379/0",
+    task_acks_late=True,
+    worker_prefetch_multiplier=1,
+    task_default_retry_delay=60,
+    task_max_retries=3,
+    task_retry_backoff=True,
+    task_retry_backoff_max=600,
+    task_retry_jitter=True,
+    task_reject_on_worker_lost=True,
+    beat_schedule={
+        "watchdog-saga-timeouts": {
+            "task": "orchestrator.watchdog_saga_timeouts",
+            "schedule": 300.0,  # Run every 5 minutes
+        },
+    },
+    task_queues={
+        "inventory": {
+            "queue_arguments": {"x-queue-type": "quorum"},
+        },
+        "payments": {
+            "queue_arguments": {"x-queue-type": "quorum"},
+        },
+        "notifications": {
+            "queue_arguments": {"x-queue-type": "quorum"},
+        },
+        "audit": {
+            "queue_arguments": {"x-queue-type": "quorum"},
+        },
+        "orchestrator": {
+            "queue_arguments": {"x-queue-type": "quorum"},
+        },
+    },
+    task_default_queue="default",
+    task_default_exchange="orquestra",
+    task_default_routing_key="default",
+    task_routes={
+        "apps.inventory.tasks.*": {"queue": "inventory"},
+        "apps.payments.tasks.*": {"queue": "payments"},
+        "apps.notifications.tasks.*": {"queue": "notifications"},
+        "apps.audit.tasks.*": {"queue": "audit"},
+        "apps.orchestrator.tasks.*": {"queue": "orchestrator"},
+        "apps.outbox.tasks.*": {"queue": "outbox"},
+    },
 )

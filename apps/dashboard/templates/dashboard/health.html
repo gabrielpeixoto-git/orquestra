@@ -1,0 +1,42 @@
+{% extends "dashboard/base.html" %}
+
+{% block page_title %}Saúde dos Serviços{% endblock %}
+
+{% block content %}
+<div class="mb-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+        <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+            Real-time
+        </span>
+    </div>
+    <button onclick="location.reload()" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+        Atualizar Agora
+    </button>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+     id="health-content"
+     hx-get="{% url 'dashboard:health' %}"
+     hx-trigger="load"
+     hx-swap="innerHTML">
+    {% include "dashboard/health_content.html" %}
+</div>
+
+<div class="mt-8 card p-6">
+    <h3 class="text-lg font-semibold mb-4">Links de Observabilidade</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <a href="http://localhost:16686" target="_blank" class="block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <h4 class="font-medium text-primary-600 dark:text-primary-400">Jaeger</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Distributed Tracing</p>
+        </a>
+        <a href="http://localhost:9090" target="_blank" class="block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <h4 class="font-medium text-primary-600 dark:text-primary-400">Prometheus</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Metrics Collection</p>
+        </a>
+        <a href="http://localhost:3000" target="_blank" class="block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <h4 class="font-medium text-primary-600 dark:text-primary-400">Grafana</h4>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Dashboards (admin/admin)</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

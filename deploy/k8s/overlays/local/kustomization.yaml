@@ -1,0 +1,39 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: orquestra
+
+resources:
+  - ../../base
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: orquestra-api
+      spec:
+        replicas: 1
+    target:
+      kind: Deployment
+      name: orquestra-api
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: orquestra-worker
+      spec:
+        replicas: 1
+    target:
+      kind: Deployment
+      name: orquestra-worker
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: orquestra-api
+      spec:
+        type: NodePort
+    target:
+      kind: Service
+      name: orquestra-api

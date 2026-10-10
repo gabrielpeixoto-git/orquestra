@@ -19,14 +19,17 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
-from apps.core.views import health_live, health_ready
+from apps.core.views import health_detailed, health_live, health_ready
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/live/", health_live),
     path("health/ready/", health_ready),
+    path("health/detailed/", health_detailed),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     path("api/v1/", include("config.api_urls")),
+    path("", include("apps.dashboard.urls")),
+    path("metrics/", include("django_prometheus.urls")),
 ]

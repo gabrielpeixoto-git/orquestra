@@ -1,7 +1,7 @@
-from .base import *  # noqa: F403
-
-DEBUG = True
 SECRET_KEY = "test-secret-key"
+DEBUG = True
+
+from .base import *  # noqa: F403
 
 DATABASES = {
     "default": {

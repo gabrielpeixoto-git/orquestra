@@ -23,9 +23,9 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra="ignore")
 
-    SECRET_KEY: str
+    SECRET_KEY: str = "django-insecure-dev-key-change-in-production"
     DEBUG: bool = False
-    ALLOWED_HOSTS: list[str] = ["localhost", "127.0.0.1"]
+    ALLOWED_HOSTS: str = "localhost,127.0.0.1"
 
     # Database
     DB_HOST: str = "localhost"
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
 _settings = Settings()
 SECRET_KEY = _settings.SECRET_KEY
 DEBUG = _settings.DEBUG
-ALLOWED_HOSTS = _settings.ALLOWED_HOSTS
+ALLOWED_HOSTS = [host.strip() for host in _settings.ALLOWED_HOSTS.split(",")]
 
 
 # Application definition
@@ -69,13 +69,22 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_prometheus",
     "apps.core",
+    "apps.messaging",
     "apps.outbox",
+    "apps.inbox",
+    "apps.orders",
+    "apps.inventory",
+    "apps.payments",
+    "apps.notifications",
+    "apps.audit",
+    "apps.orchestrator",
     "apps.dashboard",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "apps.core.middleware.CorrelationIdMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -115,6 +124,14 @@ DATABASES = {
         "PASSWORD": _settings.DB_PASSWORD,
         "HOST": _settings.DB_HOST,
         "PORT": _settings.DB_PORT,
+    }
+}
+
+# Cache (Redis)
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{_settings.REDIS_HOST}:{_settings.REDIS_PORT}/{_settings.REDIS_DB}",
     }
 }
 
@@ -166,8 +183,8 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_THROTTLE_CLASSES": [
-        "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle",
+        "apps.core.throttling.AnonRateThrottleRedis",
+        "apps.core.throttling.UserRateThrottleRedis",
     ],
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/min",
@@ -178,9 +195,11 @@ REST_FRAMEWORK = {
 
 
 # Simple JWT
+from datetime import timedelta
+
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": "minutes 60",
-    "REFRESH_TOKEN_LIFETIME": "days 7",
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "ALGORITHM": "HS256",

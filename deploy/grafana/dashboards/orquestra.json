@@ -1,0 +1,27 @@
+{
+  "dashboard": {
+    "title": "Orquestra Dashboard",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Total Orders",
+        "targets": [
+          {
+            "expr": "django_http_requests_total{endpoint='/api/v1/orders/'}"
+          }
+        ],
+        "type": "graph"
+      },
+      {
+        "id": 2,
+        "title": "Request Rate",
+        "targets": [
+          {
+            "expr": "rate(django_http_requests_total[5m])"
+          }
+        ],
+        "type": "graph"
+      }
+    ]
+  }
+}

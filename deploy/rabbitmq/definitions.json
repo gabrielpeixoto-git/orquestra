@@ -1,0 +1,243 @@
+{
+  "users": [
+    {
+      "name": "guest",
+      "password": "guest",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "queues": [
+    {
+      "name": "inventory",
+      "vhost": "/",
+      "durable": true,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "orquestra.dlx",
+        "x-dead-letter-routing-key": "inventory.dlq"
+      }
+    },
+    {
+      "name": "payments",
+      "vhost": "/",
+      "durable": true,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "orquestra.dlx",
+        "x-dead-letter-routing-key": "payments.dlq"
+      }
+    },
+    {
+      "name": "notifications",
+      "vhost": "/",
+      "durable": true,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "orquestra.dlx",
+        "x-dead-letter-routing-key": "notifications.dlq"
+      }
+    },
+    {
+      "name": "audit",
+      "vhost": "/",
+      "durable": true,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "orquestra.dlx",
+        "x-dead-letter-routing-key": "audit.dlq"
+      }
+    },
+    {
+      "name": "orchestrator",
+      "vhost": "/",
+      "durable": true,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "orquestra.dlx",
+        "x-dead-letter-routing-key": "orchestrator.dlq"
+      }
+    },
+    {
+      "name": "inventory.dlq",
+      "vhost": "/",
+      "durable": true,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "payments.dlq",
+      "vhost": "/",
+      "durable": true,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "notifications.dlq",
+      "vhost": "/",
+      "durable": true,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "audit.dlq",
+      "vhost": "/",
+      "durable": true,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "orchestrator.dlq",
+      "vhost": "/",
+      "durable": true,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "orquestra",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true
+    },
+    {
+      "name": "orquestra.dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true
+    }
+  ],
+  "bindings": [
+    {
+      "source": "orquestra",
+      "vhost": "/",
+      "destination": "inventory",
+      "destination_type": "queue",
+      "routing_key": "order.ordercreated"
+    },
+    {
+      "source": "orquestra",
+      "vhost": "/",
+      "destination": "payments",
+      "destination_type": "queue",
+      "routing_key": "inventory.stockreserved"
+    },
+    {
+      "source": "orquestra",
+      "vhost": "/",
+      "destination": "notifications",
+      "destination_type": "queue",
+      "routing_key": "payments.paymentprocessed"
+    },
+    {
+      "source": "orquestra",
+      "vhost": "/",
+      "destination": "notifications",
+      "destination_type": "queue",
+      "routing_key": "payments.paymentfailed"
+    },
+    {
+      "source": "orquestra",
+      "vhost": "/",
+      "destination": "orchestrator",
+      "destination_type": "queue",
+      "routing_key": "payments.paymentprocessed"
+    },
+    {
+      "source": "orquestra",
+      "vhost": "/",
+      "destination": "orchestrator",
+      "destination_type": "queue",
+      "routing_key": "payments.paymentfailed"
+    },
+    {
+      "source": "orquestra",
+      "vhost": "/",
+      "destination": "orchestrator",
+      "destination_type": "queue",
+      "routing_key": "inventory.stockreservationfailed"
+    },
+    {
+      "source": "orquestra",
+      "vhost": "/",
+      "destination": "audit",
+      "destination_type": "queue",
+      "routing_key": "order.*"
+    },
+    {
+      "source": "orquestra",
+      "vhost": "/",
+      "destination": "audit",
+      "destination_type": "queue",
+      "routing_key": "inventory.*"
+    },
+    {
+      "source": "orquestra",
+      "vhost": "/",
+      "destination": "audit",
+      "destination_type": "queue",
+      "routing_key": "payments.*"
+    },
+    {
+      "source": "orquestra",
+      "vhost": "/",
+      "destination": "audit",
+      "destination_type": "queue",
+      "routing_key": "notifications.*"
+    },
+    {
+      "source": "orquestra.dlx",
+      "vhost": "/",
+      "destination": "inventory.dlq",
+      "destination_type": "queue",
+      "routing_key": "inventory.dlq"
+    },
+    {
+      "source": "orquestra.dlx",
+      "vhost": "/",
+      "destination": "payments.dlq",
+      "destination_type": "queue",
+      "routing_key": "payments.dlq"
+    },
+    {
+      "source": "orquestra.dlx",
+      "vhost": "/",
+      "destination": "notifications.dlq",
+      "destination_type": "queue",
+      "routing_key": "notifications.dlq"
+    },
+    {
+      "source": "orquestra.dlx",
+      "vhost": "/",
+      "destination": "audit.dlq",
+      "destination_type": "queue",
+      "routing_key": "audit.dlq"
+    },
+    {
+      "source": "orquestra.dlx",
+      "vhost": "/",
+      "destination": "orchestrator.dlq",
+      "destination_type": "queue",
+      "routing_key": "orchestrator.dlq"
+    }
+  ]
+}

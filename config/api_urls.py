@@ -1,5 +1,7 @@
-from django.urls import URLPattern
+from django.urls import URLPattern, URLResolver, include, path
 
-urlpatterns: list[URLPattern] = [
-    # API v1 routes will be added here
+urlpatterns: list[URLPattern | URLResolver] = [
+    path("orders/", include("apps.orders.urls")),
+    path("auth/", include("apps.core.urls")),
+    path("staff/", include("apps.outbox.urls")),
 ]

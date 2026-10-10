@@ -39,10 +39,13 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit load_definitions /etc/rabbitmq/definitions.json"
     ports:
       - "5672:5672"
       - "15672:15672"
       - "15692:15692"
+    volumes:
+      - ./deploy/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
@@ -68,6 +71,7 @@ services:
       REDIS_PORT: 6379
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
     ports:
       - "8000:8000"
     depends_on:
@@ -100,7 +104,8 @@ services:
       REDIS_PORT: 6379
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
-    command: python manage.py relay_outbox
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+    command: python manage.py relay
     depends_on:
       db:
         condition: service_healthy
@@ -131,6 +136,7 @@ services:
       REDIS_PORT: 6379
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
     command: celery -A config worker --loglevel=info
     depends_on:
       db:

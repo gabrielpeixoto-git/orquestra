@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orquestra-api
+  labels:
+    app: orquestra
+    component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: orquestra
+      component: api
+  template:
+    metadata:
+      labels:
+        app: orquestra
+        component: api
+    spec:
+      containers:
+        - name: api
+          image: orquestra:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DJANGO_SETTINGS_MODULE
+              value: config.settings.production
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: orquestra-config
+                  key: db-host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: orquestra-config
+                  key: db-port
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: orquestra-config
+                  key: db-name
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: orquestra-secret
+                  key: db-user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: orquestra-secret
+                  key: db-password
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: orquestra-config
+                  key: redis-host
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: orquestra-config
+                  key: redis-port
+            - name: RABBITMQ_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: orquestra-config
+                  key: rabbitmq-host
+            - name: RABBITMQ_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: orquestra-config
+                  key: rabbitmq-port
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: orquestra-secret
+                  key: secret-key
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

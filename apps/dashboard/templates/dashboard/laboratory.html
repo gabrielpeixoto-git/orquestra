@@ -1,0 +1,94 @@
+{% extends "dashboard/base.html" %}
+
+{% block page_title %}Laboratório{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="card p-6">
+        <h3 class="text-lg font-semibold mb-4">Gerar Pedido de Teste</h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-4">Cria um pedido com status PENDING para testar a saga.</p>
+        <button onclick="generateOrder()"
+                class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+            Gerar Pedido
+        </button>
+    </div>
+
+    <div class="card p-6">
+        <h3 class="text-lg font-semibold mb-4">Injetar Falha</h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-4">Simula falhas em handlers para testar DLQ.</p>
+        <div class="space-y-3">
+            <button onclick="injectFailure('payment_timeout')"
+                    class="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
+                Timeout de Pagamento
+            </button>
+            <button onclick="injectFailure('stock_error')"
+                    class="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                Erro de Estoque
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function generateOrder() {
+    try {
+        const response = await fetch(`{% url 'dashboard:generate_order' %}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert('Pedido criado: ' + data.order_id);
+        } else {
+            alert('Erro: ' + data.error);
+        }
+    } catch (e) {
+        alert('Erro ao gerar pedido: ' + e.message);
+    }
+}
+
+async function injectFailure(failureType) {
+    if (!confirm('Injetar falha simulada?')) return;
+
+    try {
+        const formData = new FormData();
+        formData.append('failure_type', failureType);
+
+        const response = await fetch(`{% url 'dashboard:inject_failure' %}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert('Falha injetada: ' + data.message);
+        } else {
+            alert('Erro: ' + data.error);
+        }
+    } catch (e) {
+        alert('Erro ao injetar falha: ' + e.message);
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

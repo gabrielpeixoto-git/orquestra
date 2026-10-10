@@ -1,0 +1,60 @@
+{% extends "dashboard/base.html" %}
+
+{% block page_title %}Pedidos{% endblock %}
+
+{% block content %}
+<div class="card p-6">
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center space-x-3">
+            <h3 class="text-lg font-semibold">Lista de Pedidos ({{ orders|length }})</h3>
+            <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+                Real-time
+            </span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <form method="get" class="flex items-center space-x-4">
+                <input type="text"
+                       name="search"
+                       value="{{ search|default:'' }}"
+                       placeholder="Buscar por ID..."
+                       class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
+                <select name="status"
+                        class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
+                    <option value="">Todos os Status</option>
+                    <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>PENDING</option>
+                    <option value="STOCK_RESERVED" {% if status_filter == 'STOCK_RESERVED' %}selected{% endif %}>STOCK_RESERVED</option>
+                    <option value="PAYMENT_SUCCEEDED" {% if status_filter == 'PAYMENT_SUCCEEDED' %}selected{% endif %}>PAYMENT_SUCCEEDED</option>
+                    <option value="CONFIRMED" {% if status_filter == 'CONFIRMED' %}selected{% endif %}>CONFIRMED</option>
+                    <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>CANCELLED</option>
+                </select>
+                <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                    Filtrar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="table-header">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Cliente</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Total</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Criado em</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700"
+                  id="orders-table-body"
+                  hx-get="{% url 'dashboard:orders' %}"
+                  hx-trigger="load"
+                  hx-swap="innerHTML"
+                  hx-include="[name='status'], [name='search']">
+                {% include "dashboard/orders_table_body.html" %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

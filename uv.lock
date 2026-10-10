@@ -422,18 +422,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-click"
-version = "2.5.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "click" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/fc/e9/80f860c3f2bb9bdcc58de6b9578bbc6b4a57bedefdc97211e736fb960380/django_click-2.5.0.tar.gz", hash = "sha256:60d346a04d0db991d0bb31754c0dcad282643aa26a4701ca5ff5df742a7473f8", size = 7251, upload-time = "2026-01-10T13:19:37.958Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/27/43/a8eedd594b0f1d5e736ad5afd48ff4431566d2760b79115af40d8b4e950a/django_click-2.5.0-py3-none-any.whl", hash = "sha256:6bcb71d0bac47f67b91d9ee1972d881d72b5bf20cd2a45a57265cdfac49b88aa", size = 7887, upload-time = "2026-01-10T13:19:37.13Z" },
-]
-
-[[package]]
 name = "django-prometheus"
 version = "2.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -472,21 +460,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/4c/70/5f80a3acf99d26dea89e892d4573f0e650904e573708b5fbf3bfc9cec72c/django_stubs_ext-6.1.1.tar.gz", hash = "sha256:c35263135558d4c5d12b69e1f4c98632bf59bc3ab5118f7d4882d12800e3a7dd", size = 7217, upload-time = "2026-09-14T08:45:52.44Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/99/c3/305a9f7611c0dc96d2a638bc3a67bdcde5a7faa5f4669188db018b8af6fc/django_stubs_ext-6.1.1-py3-none-any.whl", hash = "sha256:64aebb7ce2c327a4a2b75207d67034e879fd7edf027c93487be69da363dc79fa", size = 10853, upload-time = "2026-09-14T08:45:51.289Z" },
-]
-
-[[package]]
-name = "django-tailwind-cli"
-version = "4.8.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "click" },
-    { name = "django" },
-    { name = "django-click" },
-    { name = "semver" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/b8/33/31713a0ffcdf9ebda53787bb5da44d8e741b80a200ccc55ee7f193221640/django_tailwind_cli-4.8.1.tar.gz", hash = "sha256:25f6362d64c19dd363d6a720eaf8cbfc1b05699190e9f73fb7c378138bc7675b", size = 165198, upload-time = "2026-09-18T12:49:32.667Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a2/61/f8317c8dcdc7f25741c7dfd81d1f376f4f29d587ae1d5cb97980fc4946cb/django_tailwind_cli-4.8.1-py3-none-any.whl", hash = "sha256:804268c985729582c4e633b176178b5aad104bcc1507fcaac8e6002f031b93ac", size = 50588, upload-time = "2026-09-18T12:49:31.016Z" },
 ]
 
 [[package]]
@@ -1203,7 +1176,6 @@ dependencies = [
     { name = "celery" },
     { name = "django" },
     { name = "django-prometheus" },
-    { name = "django-tailwind-cli" },
     { name = "djangorestframework" },
     { name = "djangorestframework-simplejwt" },
     { name = "drf-spectacular" },
@@ -1215,11 +1187,13 @@ dependencies = [
     { name = "opentelemetry-instrumentation-psycopg" },
     { name = "opentelemetry-instrumentation-redis" },
     { name = "opentelemetry-sdk" },
+    { name = "pika" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
     { name = "redis" },
+    { name = "requests" },
     { name = "structlog" },
     { name = "whitenoise" },
 ]
@@ -1262,7 +1236,6 @@ requires-dist = [
     { name = "django", specifier = ">=6.1,<6.2" },
     { name = "django-prometheus", specifier = ">=2.3,<2.4" },
     { name = "django-stubs", marker = "extra == 'dev'", specifier = ">=5.1,<5.2" },
-    { name = "django-tailwind-cli", specifier = ">=4.8,<4.9" },
     { name = "djangorestframework", specifier = ">=3.18,<3.19" },
     { name = "djangorestframework-simplejwt", specifier = ">=5.4,<5.5" },
     { name = "djangorestframework-stubs", marker = "extra == 'dev'", specifier = ">=3.15,<3.16" },
@@ -1278,6 +1251,7 @@ requires-dist = [
     { name = "opentelemetry-instrumentation-psycopg", specifier = "~=0.47b0" },
     { name = "opentelemetry-instrumentation-redis", specifier = "~=0.47b0" },
     { name = "opentelemetry-sdk", specifier = "~=1.27" },
+    { name = "pika", specifier = ">=1.3,<1.4" },
     { name = "pip-audit", marker = "extra == 'dev'", specifier = ">=2.8,<2.9" },
     { name = "poethepoet", marker = "extra == 'dev'", specifier = ">=0.31,<0.32" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4.1,<4.2" },
@@ -1289,6 +1263,7 @@ requires-dist = [
     { name = "pytest-django", marker = "extra == 'dev'", specifier = ">=4.10,<4.11" },
     { name = "python-dotenv", specifier = ">=1.0,<1.1" },
     { name = "redis", specifier = ">=5.2,<5.3" },
+    { name = "requests", specifier = ">=2.34.2" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9,<0.10" },
     { name = "structlog", specifier = "~=25.1" },
     { name = "whitenoise", specifier = ">=6.9,<6.10" },
@@ -1336,6 +1311,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/76/f1/4594f5e0fcddb6953e5b8fe00da8c317b8b41b547e2b3ae2da7512943c62/pastel-0.2.1.tar.gz", hash = "sha256:e6581ac04e973cac858828c6202c1e1e81fee1dc7de7683f3e1ffe0bfd8a573d", size = 7555, upload-time = "2020-09-16T19:21:12.43Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/aa/18/a8444036c6dd65ba3624c63b734d3ba95ba63ace513078e1580590075d21/pastel-0.2.1-py2.py3-none-any.whl", hash = "sha256:4349225fcdf6c2bb34d483e523475de5bb04a5c10ef711263452cb37d7dd4364", size = 5955, upload-time = "2020-09-16T19:21:11.409Z" },
+]
+
+[[package]]
+name = "pika"
+version = "1.3.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/db/db/d4102f356af18f316c67f2cead8ece307f731dd63140e2c71f170ddacf9b/pika-1.3.2.tar.gz", hash = "sha256:b2a327ddddf8570b4965b3576ac77091b850262d34ce8c1d8cb4e4146aa4145f", size = 145029, upload-time = "2023-05-05T14:25:43.368Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f9/f3/f412836ec714d36f0f4ab581b84c491e3f42c6b5b97a6c6ed1817f3c16d0/pika-1.3.2-py3-none-any.whl", hash = "sha256:0779a7c1fafd805672796085560d290213a465e4f6f76a6fb19e378d8041a14f", size = 155415, upload-time = "2023-05-05T14:25:41.484Z" },
 ]
 
 [[package]]
@@ -1900,15 +1884,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/a7/8f/1f545ea6f9fcd7bf4368551fb91d2064d8f0577b3079bb3f0ae5779fb773/ruff-0.9.10-py3-none-win32.whl", hash = "sha256:bfb834e87c916521ce46b1788fbb8484966e5113c02df216680102e9eb960029", size = 10247401, upload-time = "2025-03-07T15:27:35.994Z" },
     { url = "https://files.pythonhosted.org/packages/4f/18/fb703603ab108e5c165f52f5b86ee2aa9be43bb781703ec87c66a5f5d604/ruff-0.9.10-py3-none-win_amd64.whl", hash = "sha256:f2160eeef3031bf4b17df74e307d4c5fb689a6f3a26a2de3f7ef4044e3c484f1", size = 11366360, upload-time = "2025-03-07T15:27:38.66Z" },
     { url = "https://files.pythonhosted.org/packages/35/85/338e603dc68e7d9994d5d84f24adbf69bae760ba5efd3e20f5ff2cec18da/ruff-0.9.10-py3-none-win_arm64.whl", hash = "sha256:5fd804c0327a5e5ea26615550e706942f348b197d5475ff34c19733aee4b2e69", size = 10436892, upload-time = "2025-03-07T15:27:41.687Z" },
-]
-
-[[package]]
-name = "semver"
-version = "3.1.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/92/f5/e1dfe8e1d91c54ce212fd93916eb01fd1c590f413be0a0978c39a97aa1bb/semver-3.1.0.tar.gz", hash = "sha256:14bc073439513d7773662a338f4db9829cf16c12b74b9568e2d2689975fbd7fc", size = 304162, upload-time = "2026-09-12T18:38:14.045Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/be/02/bce7a1d70e9d0f6ea8623c16386138c251b5855af6cd3a11433d3fba4e66/semver-3.1.0-py3-none-any.whl", hash = "sha256:6e4998f8b4762acdfea85f9bfd5b4032e0bb50038dc04bf82011b42d5d1145c5", size = 18783, upload-time = "2026-09-12T18:38:12.457Z" },
 ]
 
 [[package]]

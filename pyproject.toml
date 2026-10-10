@@ -17,6 +17,7 @@ dependencies = [
     "whitenoise>=6.9,<6.10",
     "celery>=5.6,<5.7",
     "redis>=5.2,<5.3",
+    "pika>=1.3,<1.4",
     "structlog~=25.1",
     "opentelemetry-api~=1.27",
     "opentelemetry-sdk~=1.27",
@@ -26,7 +27,7 @@ dependencies = [
     "opentelemetry-instrumentation-redis~=0.47b0",
     "opentelemetry-exporter-otlp~=1.27",
     "django-prometheus>=2.3,<2.4",
-    "django-tailwind-cli>=4.8,<4.9",
+    "requests>=2.34.2",
 ]
 
 [project.optional-dependencies]
@@ -74,7 +75,27 @@ target-version = "py313"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "DTZ", "T10", "EM", "ISC", "ICN", "G", "PIE", "T20", "PT", "Q", "RSE", "RET", "SIM", "TID", "TCH", "ARG", "PTH", "PL", "TRY", "FLY", "PERF", "RUF"]
-ignore = ["PLR0913", "PLR0912", "PLR0915", "TRY003"]
+ignore = [
+    "PLR0913",
+    "PLR0912",
+    "PLR0915",
+    "TRY003",
+    "TRY300",  # else block after return (aceitável em services)
+    "RUF012",  # ClassVar annotations em admin e migrations (aceitável para Django)
+    "E402",    # Module level import não no topo (aceitável em settings e scripts)
+    "TRY400",  # logger.error vs logger.exception (aceitável em services Django)
+    "EM102",   # f-string em exceptions (aceitável em services Django)
+    "DTZ005",  # datetime.now() sem timezone (aceitável em migrations)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["T201", "PTH100", "PTH120", "E501"]  # print, os.path e linhas longas em scripts
+"apps/*/migrations/*" = ["RUF012"]  # Django migrations
+"apps/*/admin.py" = ["RUF012"]  # Django admin
+"apps/core/management/commands/*" = ["ARG002", "T201", "E501"]  # Django management commands
+"apps/outbox/management/commands/*" = ["ARG002"]  # Django management commands
+"tests/*" = ["PLR2004", "B007"]  # Magic values e loop variables em testes
+"apps/*" = ["PLR2004"]  # Magic values em testes
 
 [tool.ruff.lint.isort]
 known-first-party = ["config", "apps"]
@@ -86,7 +107,7 @@ strict = true
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
-exclude = ["manage.py", "apps/*/migrations/", "venv/", ".venv/", "apps/"]
+exclude = ["manage.py", "apps/*/migrations/", "venv/", ".venv/", "apps/", "scripts/"]
 
 [[tool.mypy.overrides]]
 module = "config.settings.*"
@@ -94,6 +115,10 @@ ignore_errors = true
 
 [[tool.mypy.overrides]]
 module = "celery.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pika.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
@@ -106,7 +131,11 @@ django_settings_module = "config.settings.local"
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py", "*_test.py"]
-addopts = "--cov=apps --cov-report=term-missing --cov-report=html"
+testpaths = ["tests", "apps"]
+addopts = "--cov=apps --cov-report=term-missing --cov-report=html -m 'not integration'"
+markers = [
+    "integration: Tests that require external services (RabbitMQ, etc.)"
+]
 
 [tool.poe.tasks]
 ruff-format = { cmd = "ruff format --check ." }
@@ -114,10 +143,16 @@ ruff-check = { cmd = "ruff check ." }
 mypy-check = { cmd = "mypy ." }
 django-check = { cmd = "python manage.py check" }
 check = { sequence = ["ruff-format", "ruff-check", "mypy-check", "django-check"] }
-smoke = { cmd = "python manage.py smoke_test" }
+smoke = { cmd = "python manage.py smoke --scenario success" }
+replay-dlq = { cmd = "python manage.py replay_dlq" }
 up = { cmd = "docker compose --profile lite up -d" }
+up-obs = { cmd = "docker compose --profile lite --profile obs up -d" }
 down = { cmd = "docker compose down" }
-demo = { cmd = "docker compose --profile lite up -d && python manage.py seed_demo && python manage.py runserver" }
+demo = { cmd = "python scripts/demo.py" }
+k8s-kind-create = { cmd = "kind create cluster --config deploy/k8s/kind-config.yaml" }
+k8s-kind-delete = { cmd = "kind delete cluster --name orquestra" }
+k8s-apply = { cmd = "kubectl apply -k deploy/k8s/overlays/local" }
+k8s-delete = { cmd = "kubectl delete -k deploy/k8s/overlays/local" }
 
 [tool.importlinter]
 root_modules = ["config", "apps"]
