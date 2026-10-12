@@ -2,7 +2,6 @@
 
 import uuid
 
-import pytest
 from celery.exceptions import MaxRetriesExceededError
 from django.test import TestCase
 from kombu.exceptions import OperationalError

@@ -8,8 +8,6 @@ import pytest
 from django.test import TestCase
 from django.utils import timezone
 
-from apps.inventory.models import Product
-
 from apps.inventory.models import Product, StockReservation
 from apps.inventory.services import (
     InsufficientStockError,

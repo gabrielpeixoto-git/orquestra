@@ -161,8 +161,6 @@ class OutboxMessageModelTests(TestCase):
 
     def test_outbox_message_str_representation(self) -> None:
         """Test string representation of OutboxMessage."""
-        from apps.outbox.models import DeadLetterMessage
-
         message = OutboxMessage.objects.create(
             message_type="OrderCreated",
             payload={"test": "data"},

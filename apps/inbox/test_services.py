@@ -107,8 +107,10 @@ class TestInboxMessageModel:
         message_type = "TestMessage"
         payload = {"test": "data"}
 
-        with patch(
-            "apps.inbox.services.InboxMessage.objects.create", side_effect=Exception("DB error")
+        with (
+            patch(
+                "apps.inbox.services.InboxMessage.objects.create", side_effect=Exception("DB error")
+            ),
+            pytest.raises(Exception, match="DB error"),
         ):
-            with pytest.raises(Exception, match="DB error"):
-                process_message(consumer, message_id, message_type, payload)
+            process_message(consumer, message_id, message_type, payload)

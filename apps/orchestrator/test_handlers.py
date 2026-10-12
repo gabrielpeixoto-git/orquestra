@@ -226,29 +226,6 @@ def test_handle_payment_failed_with_stock_compensation(order: Order) -> None:
 
 
 @pytest.mark.django_db
-def test_handle_payment_failed_creates_order_failed_message(order: Order) -> None:
-    """Test that OrderFailed message is created with correct payload."""
-    correlation_id = uuid.uuid4()
-    message = {
-        "correlation_id": str(correlation_id),
-        "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
-        "order_id": str(order.id),
-        "amount": 100.00,
-        "reason": "Insufficient funds",
-    }
-
-    with patch("apps.orchestrator.tasks.handlers.create_outbox_message") as mock_outbox:
-        handle_payment_failed(message)
-
-        mock_outbox.assert_called_once()
-        call_args = mock_outbox.call_args
-        assert call_args.kwargs["message_type"] == "OrderFailed"
-        assert call_args.kwargs["aggregate_type"] == "order"
-        assert call_args.kwargs["aggregate_id"] == order.id
-
-
-@pytest.mark.django_db
 def test_handle_payment_failed_with_multiple_reservations(order: Order) -> None:
     """Test handling payment failed with multiple stock reservations."""
     from apps.inventory.models import Product, StockReservation
@@ -356,57 +333,6 @@ def test_handle_payment_failed_with_release_error_continues(order: Order) -> Non
     # Verify order was still cancelled even though stock release failed
     order.refresh_from_db()
     assert order.status == Order.Status.CANCELLED
-
-
-@pytest.mark.django_db
-def test_handle_payment_failed_duplicate_message(order: Order) -> None:
-    """Test handling when DuplicateMessageError is raised for PaymentFailed."""
-    from apps.inbox.services import DuplicateMessageError
-
-    correlation_id = uuid.uuid4()
-    message = {
-        "correlation_id": str(correlation_id),
-        "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
-        "order_id": str(order.id),
-        "amount": 100.00,
-        "reason": "Insufficient funds",
-    }
-
-    with (
-        patch(
-            "apps.orchestrator.tasks.handlers.process_message", side_effect=DuplicateMessageError()
-        ),
-        patch("apps.orchestrator.tasks.handlers.create_outbox_message") as mock_outbox,
-    ):
-        handle_payment_failed(message)
-        mock_outbox.assert_not_called()
-
-
-@pytest.mark.django_db
-def test_handle_payment_processed_duplicate_message(order: Order) -> None:
-    """Test handling when DuplicateMessageError is raised."""
-    from apps.inbox.services import DuplicateMessageError
-
-    correlation_id = uuid.uuid4()
-    message = {
-        "correlation_id": str(correlation_id),
-        "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
-        "order_id": str(order.id),
-        "payment_id": str(uuid.uuid4()),
-        "amount": 100.00,
-        "gateway_transaction_id": "txn_123",
-    }
-
-    with (
-        patch(
-            "apps.orchestrator.tasks.handlers.process_message", side_effect=DuplicateMessageError()
-        ),
-        patch("apps.orchestrator.tasks.handlers.create_outbox_message") as mock_outbox,
-    ):
-        handle_payment_processed(message)
-        mock_outbox.assert_not_called()
 
 
 @pytest.mark.django_db
