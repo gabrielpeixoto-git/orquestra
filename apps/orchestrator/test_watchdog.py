@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import timedelta
+from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
@@ -96,3 +97,31 @@ def test_watchdog_handles_one_stuck_order_error_continues(order: Order) -> None:
     ):
         # Should not raise, just log the error
         watchdog_saga_timeouts()
+
+
+@pytest.mark.django_db
+def test_handle_stuck_order_with_stock_reservation(order: Order) -> None:
+    """Test that handle_stuck_order releases stock reservations."""
+    from apps.inventory.models import Product
+
+    product_id = uuid.uuid4()
+    Product.objects.create(
+        id=product_id,
+        name="Test Product",
+        price=Decimal("10.00"),
+        stock_quantity=100,
+    )
+    reservation = StockReservation.objects.create(
+        id=uuid.uuid4(),
+        order_id=order.id,
+        product_id=product_id,
+        quantity=10,
+        status=StockReservation.Status.ACTIVE,
+        expires_at=timezone.now() + timedelta(minutes=30),
+    )
+
+    with patch("apps.orchestrator.tasks.watchdog.create_outbox_message") as mock_outbox:
+        handle_stuck_order(order)
+        reservation.refresh_from_db()
+        assert reservation.status == StockReservation.Status.RELEASED
+        mock_outbox.assert_called_once()

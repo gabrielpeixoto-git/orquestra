@@ -46,6 +46,18 @@ class SendNotificationTests(TestCase):
 
         assert notification.metadata == metadata
 
+    def test_send_notification_sms_type(self) -> None:
+        """Test sending an SMS notification."""
+        notification = send_notification(
+            recipient="+5511999999999",
+            notification_type="SMS",
+            subject="SMS Alert",
+            body="Your order has been shipped",
+        )
+
+        assert notification.type == "SMS"
+        assert notification.recipient == "+5511999999999"
+
 
 class GetNotificationTests(TestCase):
     """Tests for get_notification service."""

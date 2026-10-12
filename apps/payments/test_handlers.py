@@ -181,3 +181,39 @@ def test_handle_stock_reserved_raises_on_exception() -> None:
         pytest.raises(Exception, match="DB error"),
     ):
         handle_stock_reserved(message)
+
+
+@pytest.mark.django_db
+def test_handle_stock_reserved_send_to_dlq() -> None:
+    """Test StockReserved sends to DLQ on retry exhaustion."""
+    from apps.orders.services import create_order
+
+    order = create_order(
+        customer_id=uuid.uuid4(),
+        items=[],
+    )
+
+    correlation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order.id),
+        "product_id": str(uuid.uuid4()),
+        "quantity": 1,
+        "reservation_id": str(uuid.uuid4()),
+    }
+
+    with (
+        patch("apps.payments.tasks.handlers.should_send_to_dlq", return_value=True),
+        patch("apps.payments.tasks.handlers.handle_dead_letter") as mock_dlq,
+        patch(
+            "apps.payments.tasks.handlers.process_message",
+            side_effect=Exception("Connection error"),
+        ),
+    ):
+        handle_stock_reserved(message)
+        mock_dlq.assert_called_once()
+        call_args = mock_dlq.call_args
+        assert call_args.kwargs["queue_name"] == "payments"
+        assert call_args.kwargs["message_type"] == "StockReserved"

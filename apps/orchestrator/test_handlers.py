@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
@@ -162,6 +163,155 @@ def test_handle_payment_failed_duplicate_message(order: Order) -> None:
 
 
 @pytest.mark.django_db
+def test_handle_payment_failed_with_stock_compensation(order: Order) -> None:
+    """Test handling payment failed with stock compensation."""
+    from apps.inventory.models import Product, StockReservation
+
+    correlation_id = uuid.uuid4()
+    product_id = uuid.uuid4()
+
+    # Create product and stock reservation for the order
+    Product.objects.create(
+        id=product_id,
+        name="Test Product",
+        price=Decimal("10.00"),
+        stock_quantity=100,
+    )
+    reservation = StockReservation.objects.create(
+        id=uuid.uuid4(),
+        order_id=order.id,
+        product_id=product_id,
+        quantity=10,
+        expires_at=datetime.now(),
+    )
+
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order.id),
+        "amount": 100.00,
+        "reason": "Insufficient funds",
+    }
+
+    handle_payment_failed(message)
+
+    # Verify stock was released (status changed to RELEASED)
+    reservation.refresh_from_db()
+    assert reservation.status == StockReservation.Status.RELEASED
+
+
+@pytest.mark.django_db
+def test_handle_payment_failed_with_multiple_reservations(order: Order) -> None:
+    """Test handling payment failed with multiple stock reservations."""
+    from apps.inventory.models import Product, StockReservation
+
+    correlation_id = uuid.uuid4()
+    product_id1 = uuid.uuid4()
+    product_id2 = uuid.uuid4()
+
+    # Create products and stock reservations for the order
+    Product.objects.create(
+        id=product_id1,
+        name="Test Product 1",
+        price=Decimal("10.00"),
+        stock_quantity=100,
+    )
+    Product.objects.create(
+        id=product_id2,
+        name="Test Product 2",
+        price=Decimal("20.00"),
+        stock_quantity=50,
+    )
+    StockReservation.objects.create(
+        id=uuid.uuid4(),
+        order_id=order.id,
+        product_id=product_id1,
+        quantity=5,
+        expires_at=datetime.now(),
+    )
+    StockReservation.objects.create(
+        id=uuid.uuid4(),
+        order_id=order.id,
+        product_id=product_id2,
+        quantity=3,
+        expires_at=datetime.now(),
+    )
+
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order.id),
+        "amount": 100.00,
+        "reason": "Insufficient funds",
+    }
+
+    handle_payment_failed(message)
+
+    # Verify both stocks were released
+    reservations = StockReservation.objects.filter(order_id=order.id)
+    for reservation in reservations:
+        assert reservation.status == StockReservation.Status.RELEASED
+
+
+@pytest.mark.django_db
+def test_handle_payment_failed_with_release_error_continues(order: Order) -> None:
+    """Test handling payment failed continues even if one stock release fails."""
+    from apps.inventory.models import Product, StockReservation
+
+    correlation_id = uuid.uuid4()
+    product_id1 = uuid.uuid4()
+    product_id2 = uuid.uuid4()
+
+    # Create products and stock reservations for the order
+    Product.objects.create(
+        id=product_id1,
+        name="Test Product 1",
+        price=Decimal("10.00"),
+        stock_quantity=100,
+    )
+    Product.objects.create(
+        id=product_id2,
+        name="Test Product 2",
+        price=Decimal("20.00"),
+        stock_quantity=50,
+    )
+    StockReservation.objects.create(
+        id=uuid.uuid4(),
+        order_id=order.id,
+        product_id=product_id1,
+        quantity=5,
+        expires_at=datetime.now(),
+    )
+    StockReservation.objects.create(
+        id=uuid.uuid4(),
+        order_id=order.id,
+        product_id=product_id2,
+        quantity=3,
+        expires_at=datetime.now(),
+    )
+
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order.id),
+        "amount": 100.00,
+        "reason": "Insufficient funds",
+    }
+
+    with patch(
+        "apps.orchestrator.tasks.handlers.release_stock", side_effect=Exception("Release error")
+    ):
+        handle_payment_failed(message)
+
+    # Verify order was still cancelled even though stock release failed
+    order.refresh_from_db()
+    assert order.status == Order.Status.CANCELLED
+
+
+@pytest.mark.django_db
 def test_handle_stock_reservation_failed_idempotent(order: Order) -> None:
     """Test that duplicate messages are skipped."""
     correlation_id = uuid.uuid4()
@@ -301,3 +451,84 @@ def test_handle_stock_reservation_failed_raises_on_exception(order: Order) -> No
         pytest.raises(Exception, match="DB error"),
     ):
         handle_stock_reservation_failed(message)
+
+
+@pytest.mark.django_db
+def test_handle_payment_processed_send_to_dlq(order: Order) -> None:
+    """Test PaymentProcessed sends to DLQ on retry exhaustion."""
+    correlation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order.id),
+        "payment_id": str(uuid.uuid4()),
+        "amount": 100.00,
+        "gateway_transaction_id": "txn_123",
+    }
+
+    with (
+        patch("apps.orchestrator.tasks.handlers.should_send_to_dlq", return_value=True),
+        patch("apps.orchestrator.tasks.handlers.handle_dead_letter") as mock_handle_dlq,
+        patch(
+            "apps.orchestrator.tasks.handlers.update_order_status",
+            side_effect=Exception("DB error"),
+        ),
+    ):
+        handle_payment_processed(message)
+        mock_handle_dlq.assert_called_once()
+        call_args = mock_handle_dlq.call_args
+        assert call_args.kwargs["queue_name"] == "orchestrator"
+        assert call_args.kwargs["message_type"] == "PaymentProcessed"
+
+
+@pytest.mark.django_db
+def test_handle_payment_failed_send_to_dlq(order: Order) -> None:
+    """Test PaymentFailed sends to DLQ on retry exhaustion."""
+    correlation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order.id),
+        "amount": 100.00,
+        "reason": "Insufficient funds",
+    }
+
+    with (
+        patch("apps.orchestrator.tasks.handlers.should_send_to_dlq", return_value=True),
+        patch("apps.orchestrator.tasks.handlers.handle_dead_letter") as mock_handle_dlq,
+        patch("apps.orchestrator.tasks.handlers.cancel_order", side_effect=Exception("DB error")),
+    ):
+        handle_payment_failed(message)
+        mock_handle_dlq.assert_called_once()
+        call_args = mock_handle_dlq.call_args
+        assert call_args.kwargs["queue_name"] == "orchestrator"
+        assert call_args.kwargs["message_type"] == "PaymentFailed"
+
+
+@pytest.mark.django_db
+def test_handle_stock_reservation_failed_send_to_dlq(order: Order) -> None:
+    """Test StockReservationFailed sends to DLQ on retry exhaustion."""
+    correlation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order.id),
+        "product_id": str(uuid.uuid4()),
+        "requested_quantity": 10,
+        "available_quantity": 5,
+        "reason": "Insufficient stock",
+    }
+
+    with (
+        patch("apps.orchestrator.tasks.handlers.should_send_to_dlq", return_value=True),
+        patch("apps.orchestrator.tasks.handlers.handle_dead_letter") as mock_handle_dlq,
+        patch("apps.orchestrator.tasks.handlers.cancel_order", side_effect=Exception("DB error")),
+    ):
+        handle_stock_reservation_failed(message)
+        mock_handle_dlq.assert_called_once()
+        call_args = mock_handle_dlq.call_args
+        assert call_args.kwargs["queue_name"] == "orchestrator"
+        assert call_args.kwargs["message_type"] == "StockReservationFailed"

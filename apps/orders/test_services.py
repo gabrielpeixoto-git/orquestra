@@ -131,6 +131,19 @@ class CancelOrderTests(TestCase):
 
         assert cancelled_order.status == Order.Status.CANCELLED
 
+    def test_cancel_confirmed_order(self) -> None:
+        """Test cancelling a confirmed order."""
+        order = Order.objects.create(
+            id=uuid.uuid4(),
+            customer_id=uuid.uuid4(),
+            total_amount=Decimal("100.00"),
+            status=Order.Status.CONFIRMED,
+        )
+
+        cancelled_order = cancel_order(order.id)
+
+        assert cancelled_order.status == Order.Status.CANCELLED
+
     def test_cancel_nonexistent_order_raises_error(self) -> None:
         """Test cancelling a non-existent order raises error."""
         order_id = uuid.uuid4()
@@ -159,6 +172,17 @@ class UpdateOrderStatusTests(TestCase):
 
         with pytest.raises(OrderNotFoundError):
             update_order_status(order_id, Order.Status.CONFIRMED)
+
+    def test_update_order_status_to_cancelled(self) -> None:
+        """Test updating order status to cancelled."""
+        order = create_order(
+            customer_id=uuid.uuid4(),
+            items=[],
+        )
+
+        updated_order = update_order_status(order.id, Order.Status.CANCELLED)
+
+        assert updated_order.status == Order.Status.CANCELLED
 
 
 class GetOrderTests(TestCase):

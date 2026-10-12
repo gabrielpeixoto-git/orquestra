@@ -162,3 +162,32 @@ def test_handle_order_created_raises_on_exception() -> None:
         pytest.raises(Exception, match="DB error"),
     ):
         handle_order_created(message)
+
+
+@pytest.mark.django_db
+def test_handle_order_created_send_to_dlq() -> None:
+    """Test OrderCreated sends to DLQ on retry exhaustion."""
+    correlation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(uuid.uuid4()),
+        "customer_id": str(uuid.uuid4()),
+        "items": [],
+        "total_amount": 200.00,
+    }
+
+    with (
+        patch("apps.inventory.tasks.handlers.should_send_to_dlq", return_value=True),
+        patch("apps.inventory.tasks.handlers.handle_dead_letter") as mock_dlq,
+        patch(
+            "apps.inventory.tasks.handlers.process_message",
+            side_effect=Exception("Connection error"),
+        ),
+    ):
+        handle_order_created(message)
+        mock_dlq.assert_called_once()
+        call_args = mock_dlq.call_args
+        assert call_args.kwargs["queue_name"] == "inventory"
+        assert call_args.kwargs["message_type"] == "OrderCreated"

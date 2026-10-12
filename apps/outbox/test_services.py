@@ -143,3 +143,13 @@ class TestOutboxServices:
         """Test retrieving pending messages when none exist."""
         pending = get_pending_messages()
         assert pending == []
+
+    def test_mark_message_published_nonexistent(self):
+        """Test marking a non-existent message as published."""
+        with pytest.raises(OutboxMessage.DoesNotExist):
+            mark_message_published(uuid.uuid4())
+
+    def test_mark_message_failed_nonexistent(self):
+        """Test marking a non-existent message as failed."""
+        with pytest.raises(OutboxMessage.DoesNotExist):
+            mark_message_failed(uuid.uuid4(), "test error")
