@@ -122,3 +122,33 @@ def test_handle_stock_reserved_duplicate_message() -> None:
     ):
         handle_stock_reserved(message)
         mock_outbox.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_handle_stock_reserved_idempotent() -> None:
+    """Test that duplicate messages are skipped."""
+    from apps.orders.services import create_order
+
+    order = create_order(
+        customer_id=uuid.uuid4(),
+        items=[],
+    )
+
+    correlation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order.id),
+        "product_id": str(uuid.uuid4()),
+        "quantity": 1,
+        "reservation_id": str(uuid.uuid4()),
+    }
+
+    # First call
+    handle_stock_reserved(message)
+
+    # Second call (should be idempotent)
+    with patch("apps.payments.tasks.handlers.create_outbox_message") as mock_outbox:
+        handle_stock_reserved(message)
+        mock_outbox.assert_not_called()

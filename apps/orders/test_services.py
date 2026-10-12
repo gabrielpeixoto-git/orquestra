@@ -2,6 +2,7 @@
 
 import uuid
 from decimal import Decimal
+from unittest.mock import patch
 
 import pytest
 from django.test import TestCase
@@ -81,6 +82,23 @@ class CreateOrderTests(TestCase):
         items = [{"invalid": "data"}]
 
         with pytest.raises(OrderCreationError):
+            create_order(customer_id, items)
+
+    def test_create_order_with_exception_raises_error(self) -> None:
+        """Test that exception during order creation raises OrderCreationError."""
+        customer_id = uuid.uuid4()
+        items = [
+            {
+                "product_id": uuid.uuid4(),
+                "quantity": 2,
+                "unit_price": Decimal("10.50"),
+            }
+        ]
+
+        with (
+            patch("apps.orders.services.Order.objects.create", side_effect=Exception("DB error")),
+            pytest.raises(OrderCreationError),
+        ):
             create_order(customer_id, items)
 
 

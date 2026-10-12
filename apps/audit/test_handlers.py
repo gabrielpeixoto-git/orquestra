@@ -45,3 +45,61 @@ def test_handle_all_messages_idempotent() -> None:
     with patch("apps.audit.tasks.handlers.log_audit") as mock_log_audit:
         handle_all_messages(message, message_type)
         mock_log_audit.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_handle_all_messages_duplicate_error() -> None:
+    """Test handling when DuplicateMessageError is raised."""
+    from apps.inbox.services import DuplicateMessageError
+
+    correlation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "order_id": str(uuid.uuid4()),
+    }
+    message_type = "OrderCreated"
+
+    with (
+        patch("apps.audit.tasks.handlers.process_message", side_effect=DuplicateMessageError()),
+        patch("apps.audit.tasks.handlers.log_audit") as mock_log_audit,
+    ):
+        handle_all_messages(message, message_type)
+        mock_log_audit.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_handle_all_messages_with_error() -> None:
+    """Test handling when an error occurs during processing."""
+    message = {
+        "correlation_id": str(uuid.uuid4()),
+        "order_id": str(uuid.uuid4()),
+    }
+    message_type = "OrderCreated"
+
+    with (
+        patch("apps.audit.tasks.handlers.log_audit", side_effect=Exception("Logging failed")),
+        patch("apps.audit.tasks.handlers.should_send_to_dlq", return_value=False),
+        pytest.raises(Exception, match="Logging failed"),
+    ):
+        handle_all_messages(message, message_type)
+
+
+@pytest.mark.django_db
+def test_handle_all_messages_send_to_dlq() -> None:
+    """Test that messages are sent to DLQ when retry is exhausted."""
+    message = {
+        "correlation_id": str(uuid.uuid4()),
+        "order_id": str(uuid.uuid4()),
+    }
+    message_type = "OrderCreated"
+
+    with (
+        patch("apps.audit.tasks.handlers.log_audit", side_effect=Exception("Logging failed")),
+        patch("apps.audit.tasks.handlers.should_send_to_dlq", return_value=True),
+        patch("apps.audit.tasks.handlers.handle_dead_letter") as mock_handle_dlq,
+    ):
+        handle_all_messages(message, message_type)
+        mock_handle_dlq.assert_called_once()
+        call_args = mock_handle_dlq.call_args
+        assert call_args.kwargs["queue_name"] == "audit"
+        assert call_args.kwargs["message_type"] == "OrderCreated"
