@@ -272,3 +272,39 @@ def test_handle_payment_failed_raises_on_exception() -> None:
         pytest.raises(Exception, match="Send error"),
     ):
         handle_payment_failed(message)
+
+
+@pytest.mark.django_db
+def test_handle_payment_processed_creates_notification_sent_message() -> None:
+    """Test that NotificationSent message is created with correct payload."""
+    correlation_id = uuid.uuid4()
+    order_id = uuid.uuid4()
+    notification_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order_id),
+        "payment_id": str(uuid.uuid4()),
+        "amount": 100.00,
+        "gateway_transaction_id": "txn_123",
+    }
+
+    with (
+        patch("apps.notifications.tasks.handlers.send_notification") as mock_send,
+        patch("apps.notifications.tasks.handlers.create_outbox_message") as mock_outbox,
+    ):
+        notification = MagicMock()
+        notification.id = notification_id
+        notification.recipient = "customer@example.com"
+        notification.type = "EMAIL"
+        notification.subject = "Payment Successful"
+        mock_send.return_value = notification
+
+        handle_payment_processed(message)
+
+        mock_outbox.assert_called_once()
+        call_args = mock_outbox.call_args
+        assert call_args.kwargs["message_type"] == "NotificationSent"
+        assert call_args.kwargs["aggregate_type"] == "notification"
+        assert call_args.kwargs["aggregate_id"] == notification_id

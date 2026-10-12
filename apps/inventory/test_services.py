@@ -8,6 +8,8 @@ import pytest
 from django.test import TestCase
 from django.utils import timezone
 
+from apps.inventory.models import Product
+
 from apps.inventory.models import Product, StockReservation
 from apps.inventory.services import (
     InsufficientStockError,
@@ -136,6 +138,26 @@ class ReleaseStockTests(TestCase):
 
         with pytest.raises(ReservationNotFoundError):
             release_stock(reservation_id)
+
+
+class ProductModelTests(TestCase):
+    """Tests for Product model."""
+
+    def test_product_str_representation(self) -> None:
+        """Test string representation of Product."""
+        from decimal import Decimal
+
+        product = Product.objects.create(
+            id=uuid.uuid4(),
+            name="Test Product",
+            description="A test product",
+            price=Decimal("10.00"),
+            stock_quantity=100,
+        )
+
+        str_repr = str(product)
+        assert "Test Product" in str_repr
+        assert "10.00" in str_repr
 
     def test_release_stock_product_not_found_raises_error(self) -> None:
         """Test releasing stock when product not found raises error."""

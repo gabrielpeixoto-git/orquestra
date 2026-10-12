@@ -217,3 +217,46 @@ def test_handle_stock_reserved_send_to_dlq() -> None:
         call_args = mock_dlq.call_args
         assert call_args.kwargs["queue_name"] == "payments"
         assert call_args.kwargs["message_type"] == "StockReserved"
+
+
+@pytest.mark.django_db
+def test_handle_stock_reserved_creates_payment_processed_message() -> None:
+    """Test that PaymentProcessed message is created with correct payload."""
+    from apps.orders.services import create_order
+
+    order = create_order(
+        customer_id=uuid.uuid4(),
+        items=[],
+    )
+
+    correlation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order.id),
+        "product_id": str(uuid.uuid4()),
+        "quantity": 1,
+        "reservation_id": str(uuid.uuid4()),
+    }
+
+    payment_id = uuid.uuid4()
+    gateway_txn_id = "txn_12345"
+
+    with (
+        patch("apps.payments.tasks.handlers.process_payment") as mock_process,
+        patch("apps.payments.tasks.handlers.create_outbox_message") as mock_outbox,
+    ):
+        mock_payment = MagicMock()
+        mock_payment.id = payment_id
+        mock_payment.gateway_transaction_id = gateway_txn_id
+        mock_process.return_value = mock_payment
+
+        handle_stock_reserved(message)
+
+        mock_outbox.assert_called_once()
+        call_args = mock_outbox.call_args
+        assert call_args.kwargs["message_type"] == "PaymentProcessed"
+        assert call_args.kwargs["aggregate_type"] == "payment"
+        assert call_args.kwargs["aggregate_id"] == payment_id
+        assert call_args.kwargs["correlation_id"] == correlation_id

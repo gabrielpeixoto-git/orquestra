@@ -85,3 +85,33 @@ class GetAuditLogTests(TestCase):
 
         with pytest.raises(AuditLog.DoesNotExist):
             get_audit_log(audit_log_id)
+
+
+class AuditLogModelTests(TestCase):
+    """Tests for AuditLog model."""
+
+    def test_audit_log_str_representation(self) -> None:
+        """Test string representation of AuditLog."""
+        audit_log = AuditLog.objects.create(
+            id=uuid.uuid4(),
+            action="ORDER_CREATED",
+            actor="user@example.com",
+            entity_type="order",
+            entity_id=uuid.uuid4(),
+        )
+
+        str_repr = str(audit_log)
+        assert "ORDER_CREATED" in str_repr
+
+    def test_audit_log_choices(self) -> None:
+        """Test AuditLog choices work correctly."""
+        audit_log = AuditLog.objects.create(
+            id=uuid.uuid4(),
+            action="ORDER_CREATED",
+            actor="user@example.com",
+            entity_type="order",
+            entity_id=uuid.uuid4(),
+        )
+
+        assert audit_log.action == "ORDER_CREATED"
+        assert audit_log.entity_type == "order"

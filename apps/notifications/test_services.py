@@ -83,3 +83,24 @@ class GetNotificationTests(TestCase):
 
         with pytest.raises(Notification.DoesNotExist):
             get_notification(notification_id)
+
+
+class NotificationModelTests(TestCase):
+    """Tests for Notification model."""
+
+    def test_notification_str_representation(self) -> None:
+        """Test string representation of Notification."""
+        notification = Notification.objects.create(
+            id=uuid.uuid4(),
+            recipient="user@example.com",
+            type=Notification.Type.EMAIL,
+            status=Notification.Status.SENT,
+            subject="Test Subject",
+            body="Test body",
+        )
+
+        str_repr = str(notification)
+        assert "Notification" in str_repr
+        assert str(notification.id) in str_repr
+        assert "EMAIL" in str_repr
+        assert "user@example.com" in str_repr

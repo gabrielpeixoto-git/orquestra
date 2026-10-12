@@ -191,3 +191,42 @@ def test_handle_order_created_send_to_dlq() -> None:
         call_args = mock_dlq.call_args
         assert call_args.kwargs["queue_name"] == "inventory"
         assert call_args.kwargs["message_type"] == "OrderCreated"
+
+
+@pytest.mark.django_db
+def test_handle_order_created_creates_stock_reserved_message() -> None:
+    """Test that StockReserved message is created with correct payload."""
+    correlation_id = uuid.uuid4()
+    product_id = uuid.uuid4()
+    reservation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(uuid.uuid4()),
+        "customer_id": str(uuid.uuid4()),
+        "items": [
+            {
+                "product_id": str(product_id),
+                "quantity": 2,
+                "unit_price": 100.00,
+            }
+        ],
+        "total_amount": 200.00,
+    }
+
+    with (
+        patch("apps.inventory.tasks.handlers.reserve_stock") as mock_reserve,
+        patch("apps.inventory.tasks.handlers.create_outbox_message") as mock_outbox,
+    ):
+        mock_reservation = MagicMock()
+        mock_reservation.id = reservation_id
+        mock_reserve.return_value = mock_reservation
+
+        handle_order_created(message)
+
+        mock_outbox.assert_called_once()
+        call_args = mock_outbox.call_args
+        assert call_args.kwargs["message_type"] == "StockReserved"
+        assert call_args.kwargs["aggregate_type"] == "inventory"
+        assert call_args.kwargs["aggregate_id"] == reservation_id

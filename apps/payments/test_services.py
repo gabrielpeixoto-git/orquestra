@@ -33,6 +33,27 @@ class ProcessPaymentTests(TestCase):
         assert payment.order_id == order_id
         assert payment.amount == amount
         assert payment.status == Payment.Status.SUCCEEDED
+
+
+class PaymentModelTests(TestCase):
+    """Tests for Payment model."""
+
+    def test_payment_str_representation(self) -> None:
+        """Test string representation of Payment."""
+        from decimal import Decimal
+
+        payment = Payment.objects.create(
+            id=uuid.uuid4(),
+            order_id=uuid.uuid4(),
+            amount=Decimal("100.00"),
+            status=Payment.Status.SUCCEEDED,
+            gateway_transaction_id="txn_123",
+        )
+
+        str_repr = str(payment)
+        assert "Payment" in str_repr
+        assert str(payment.id) in str_repr
+        assert "SUCCEEDED" in str_repr
         assert payment.gateway_transaction_id.startswith("txn_")
 
     def test_process_payment_with_large_amount_declined(self) -> None:

@@ -3,6 +3,7 @@
 import uuid
 
 import pytest
+from django.test import TestCase
 
 from apps.outbox.models import OutboxMessage
 from apps.outbox.services import (
@@ -153,3 +154,49 @@ class TestOutboxServices:
         """Test marking a non-existent message as failed."""
         with pytest.raises(OutboxMessage.DoesNotExist):
             mark_message_failed(uuid.uuid4(), "test error")
+
+
+class OutboxMessageModelTests(TestCase):
+    """Tests for OutboxMessage model."""
+
+    def test_outbox_message_str_representation(self) -> None:
+        """Test string representation of OutboxMessage."""
+        from apps.outbox.models import DeadLetterMessage
+
+        message = OutboxMessage.objects.create(
+            message_type="OrderCreated",
+            payload={"test": "data"},
+            aggregate_type="order",
+            aggregate_id=uuid.uuid4(),
+            correlation_id=uuid.uuid4(),
+            status=OutboxMessage.Status.PENDING,
+        )
+
+        str_repr = str(message)
+        assert "OutboxMessage" in str_repr
+        assert str(message.id) in str_repr
+        assert "OrderCreated" in str_repr
+        assert "PENDING" in str_repr
+
+
+class DeadLetterMessageModelTests(TestCase):
+    """Tests for DeadLetterMessage model."""
+
+    def test_dead_letter_message_str_representation(self) -> None:
+        """Test string representation of DeadLetterMessage."""
+        from apps.outbox.models import DeadLetterMessage
+
+        dead_letter = DeadLetterMessage.objects.create(
+            queue_name="payments",
+            message_type="PaymentProcessed",
+            payload={"test": "data"},
+            error_message="Test error",
+            correlation_id=uuid.uuid4(),
+            status=DeadLetterMessage.Status.PENDING,
+        )
+
+        str_repr = str(dead_letter)
+        assert "DeadLetterMessage" in str_repr
+        assert str(dead_letter.id) in str_repr
+        assert "payments" in str_repr
+        assert "PENDING" in str_repr

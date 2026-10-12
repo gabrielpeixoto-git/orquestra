@@ -78,3 +78,37 @@ class TestInboxServices:
 
         # Check with consumer2
         assert is_message_processed(consumer2, message_id) is False
+
+
+@pytest.mark.django_db
+class TestInboxMessageModel:
+    """Test InboxMessage model."""
+
+    def test_inbox_message_str_representation(self):
+        """Test string representation of InboxMessage."""
+        message_id = uuid.uuid4()
+        inbox_msg = InboxMessage.objects.create(
+            consumer="test_consumer",
+            message_id=message_id,
+            message_type="TestMessage",
+            payload={"test": "data"},
+        )
+
+        str_repr = str(inbox_msg)
+        assert "test_consumer" in str_repr
+        assert str(message_id) in str_repr
+
+    def test_process_message_raises_on_non_duplicate_error(self):
+        """Test that non-duplicate errors are raised."""
+        from unittest.mock import patch
+
+        message_id = uuid.uuid4()
+        consumer = "test_consumer"
+        message_type = "TestMessage"
+        payload = {"test": "data"}
+
+        with patch(
+            "apps.inbox.services.InboxMessage.objects.create", side_effect=Exception("DB error")
+        ):
+            with pytest.raises(Exception, match="DB error"):
+                process_message(consumer, message_id, message_type, payload)
