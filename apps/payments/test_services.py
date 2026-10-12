@@ -10,7 +10,9 @@ from apps.payments.models import Payment
 from apps.payments.services import (
     InvalidAmountError,
     PaymentDeclinedError,
+    PaymentGatewayError,
     PaymentNotFoundError,
+    PaymentTimeoutError,
     get_payment,
     get_payment_by_order,
     process_payment,
@@ -56,6 +58,22 @@ class ProcessPaymentTests(TestCase):
 
         with pytest.raises(InvalidAmountError):
             process_payment(order_id, amount)
+
+    def test_process_payment_with_timeout_raises_error(self) -> None:
+        """Test that payment with timeout raises error."""
+        order_id = uuid.uuid4()
+        amount = Decimal("100.00")
+
+        with pytest.raises(PaymentTimeoutError):
+            process_payment(order_id, amount, force_timeout=True)
+
+    def test_process_payment_with_gateway_error_raises_error(self) -> None:
+        """Test that payment with gateway error raises error."""
+        order_id = uuid.uuid4()
+        amount = Decimal("100.00")
+
+        with pytest.raises(PaymentGatewayError):
+            process_payment(order_id, amount, force_error=True)
 
 
 class RefundPaymentTests(TestCase):

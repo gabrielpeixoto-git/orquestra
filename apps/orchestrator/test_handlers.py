@@ -232,3 +232,72 @@ def test_handle_stock_reservation_failed_duplicate_message(order: Order) -> None
     ):
         handle_stock_reservation_failed(message)
         mock_outbox.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_handle_payment_processed_raises_on_exception(order: Order) -> None:
+    """Test PaymentProcessed raises on non-DLQ exception."""
+    correlation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order.id),
+        "payment_id": str(uuid.uuid4()),
+        "amount": 100.00,
+        "gateway_transaction_id": "txn_123",
+    }
+
+    with (
+        patch("apps.orchestrator.tasks.handlers.should_send_to_dlq", return_value=False),
+        patch(
+            "apps.orchestrator.tasks.handlers.update_order_status",
+            side_effect=Exception("DB error"),
+        ),
+        pytest.raises(Exception, match="DB error"),
+    ):
+        handle_payment_processed(message)
+
+
+@pytest.mark.django_db
+def test_handle_payment_failed_raises_on_exception(order: Order) -> None:
+    """Test PaymentFailed raises on non-DLQ exception."""
+    correlation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order.id),
+        "amount": 100.00,
+        "reason": "Insufficient funds",
+    }
+
+    with (
+        patch("apps.orchestrator.tasks.handlers.should_send_to_dlq", return_value=False),
+        patch("apps.orchestrator.tasks.handlers.cancel_order", side_effect=Exception("DB error")),
+        pytest.raises(Exception, match="DB error"),
+    ):
+        handle_payment_failed(message)
+
+
+@pytest.mark.django_db
+def test_handle_stock_reservation_failed_raises_on_exception(order: Order) -> None:
+    """Test StockReservationFailed raises on non-DLQ exception."""
+    correlation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order.id),
+        "product_id": str(uuid.uuid4()),
+        "requested_quantity": 10,
+        "available_quantity": 5,
+        "reason": "Insufficient stock",
+    }
+
+    with (
+        patch("apps.orchestrator.tasks.handlers.should_send_to_dlq", return_value=False),
+        patch("apps.orchestrator.tasks.handlers.cancel_order", side_effect=Exception("DB error")),
+        pytest.raises(Exception, match="DB error"),
+    ):
+        handle_stock_reservation_failed(message)

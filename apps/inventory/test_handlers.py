@@ -140,3 +140,25 @@ def test_handle_order_created_duplicate_message_error() -> None:
     ):
         handle_order_created(message)
         mock_outbox.assert_not_called()
+
+
+@pytest.mark.django_db
+def test_handle_order_created_raises_on_exception() -> None:
+    """Test OrderCreated raises on non-DLQ exception."""
+    correlation_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(uuid.uuid4()),
+        "customer_id": str(uuid.uuid4()),
+        "items": [],
+        "total_amount": 200.00,
+    }
+
+    with (
+        patch("apps.inventory.tasks.handlers.should_send_to_dlq", return_value=False),
+        patch("apps.inventory.tasks.handlers.process_message", side_effect=Exception("DB error")),
+        pytest.raises(Exception, match="DB error"),
+    ):
+        handle_order_created(message)

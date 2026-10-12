@@ -221,3 +221,54 @@ def test_handle_payment_failed_send_to_dlq() -> None:
         call_args = mock_handle_dlq.call_args
         assert call_args.kwargs["queue_name"] == "notifications"
         assert call_args.kwargs["message_type"] == "PaymentFailed"
+
+
+@pytest.mark.django_db
+def test_handle_payment_processed_raises_on_exception() -> None:
+    """Test PaymentProcessed raises on non-DLQ exception."""
+    correlation_id = uuid.uuid4()
+    order_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order_id),
+        "payment_id": str(uuid.uuid4()),
+        "amount": 100.00,
+        "gateway_transaction_id": "txn_123",
+    }
+
+    with (
+        patch("apps.notifications.tasks.handlers.should_send_to_dlq", return_value=False),
+        patch(
+            "apps.notifications.tasks.handlers.send_notification",
+            side_effect=Exception("Send error"),
+        ),
+        pytest.raises(Exception, match="Send error"),
+    ):
+        handle_payment_processed(message)
+
+
+@pytest.mark.django_db
+def test_handle_payment_failed_raises_on_exception() -> None:
+    """Test PaymentFailed raises on non-DLQ exception."""
+    correlation_id = uuid.uuid4()
+    order_id = uuid.uuid4()
+    message = {
+        "correlation_id": str(correlation_id),
+        "causation_id": str(correlation_id),
+        "timestamp": datetime.now().isoformat(),
+        "order_id": str(order_id),
+        "amount": 100.00,
+        "reason": "Insufficient funds",
+    }
+
+    with (
+        patch("apps.notifications.tasks.handlers.should_send_to_dlq", return_value=False),
+        patch(
+            "apps.notifications.tasks.handlers.send_notification",
+            side_effect=Exception("Send error"),
+        ),
+        pytest.raises(Exception, match="Send error"),
+    ):
+        handle_payment_failed(message)

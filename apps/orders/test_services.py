@@ -144,11 +144,9 @@ class UpdateOrderStatusTests(TestCase):
 
     def test_update_order_status(self) -> None:
         """Test updating order status."""
-        order = Order.objects.create(
-            id=uuid.uuid4(),
+        order = create_order(
             customer_id=uuid.uuid4(),
-            total_amount=Decimal("100.00"),
-            status=Order.Status.PENDING,
+            items=[],
         )
 
         updated_order = update_order_status(order.id, Order.Status.CONFIRMED)
