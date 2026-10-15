@@ -2,26 +2,26 @@
 
 import uuid
 
+import pytest
 from django.contrib.auth.models import User
-from django.test import TestCase
 from rest_framework.test import APIClient
 
 from apps.outbox.models import DeadLetterMessage, OutboxMessage
 
 
-class ListOutboxMessagesTests(TestCase):
+@pytest.mark.django_db
+@pytest.mark.integration
+class ListOutboxMessagesTests:
     """Tests for GET /api/v1/outbox/ endpoint."""
-
-    def setUp(self) -> None:
-        """Set up test client and staff user."""
-        self.client = APIClient()
-        self.staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
-        self.client.force_authenticate(user=self.staff_user)
 
     def test_list_outbox_messages_success(self) -> None:
         """Test listing outbox messages as staff."""
+        client = APIClient()
+        staff_user = User.objects.create_user(
+            username="staff", is_staff=True, is_superuser=True
+        )
+        client.force_authenticate(user=staff_user)
+
         OutboxMessage.objects.create(
             id=uuid.uuid4(),
             message_type="OrderCreated",
@@ -32,7 +32,7 @@ class ListOutboxMessagesTests(TestCase):
             status=OutboxMessage.Status.PENDING,
         )
 
-        response = self.client.get("/api/v1/staff/outbox/")
+        response = client.get("/staff/outbox/")
 
         assert response.status_code == 200
         assert len(response.data) == 1
@@ -40,25 +40,26 @@ class ListOutboxMessagesTests(TestCase):
 
     def test_list_outbox_messages_unauthorized(self) -> None:
         """Test listing outbox messages without staff permission."""
-        self.client.force_authenticate(user=None)
-        response = self.client.get("/api/v1/staff/outbox/")
+        client = APIClient()
+        client.force_authenticate(user=None)
+        response = client.get("/staff/outbox/")
 
         assert response.status_code in (401, 403)
 
 
-class ListDeadLettersTests(TestCase):
+@pytest.mark.django_db
+@pytest.mark.integration
+class ListDeadLettersTests:
     """Tests for GET /api/v1/dead-letters/ endpoint."""
-
-    def setUp(self) -> None:
-        """Set up test client and staff user."""
-        self.client = APIClient()
-        self.staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
-        self.client.force_authenticate(user=self.staff_user)
 
     def test_list_dead_letters_success(self) -> None:
         """Test listing dead letter messages as staff."""
+        client = APIClient()
+        staff_user = User.objects.create_user(
+            username="staff", is_staff=True, is_superuser=True
+        )
+        client.force_authenticate(user=staff_user)
+
         DeadLetterMessage.objects.create(
             id=uuid.uuid4(),
             queue_name="inventory",
@@ -69,7 +70,7 @@ class ListDeadLettersTests(TestCase):
             status=DeadLetterMessage.Status.PENDING,
         )
 
-        response = self.client.get("/api/v1/staff/dead-letters/")
+        response = client.get("/staff/dead-letters/")
 
         assert response.status_code == 200
         assert len(response.data) == 1
@@ -77,6 +78,12 @@ class ListDeadLettersTests(TestCase):
 
     def test_list_dead_letters_filtered_by_queue(self) -> None:
         """Test listing dead letters filtered by queue."""
+        client = APIClient()
+        staff_user = User.objects.create_user(
+            username="staff", is_staff=True, is_superuser=True
+        )
+        client.force_authenticate(user=staff_user)
+
         DeadLetterMessage.objects.create(
             id=uuid.uuid4(),
             queue_name="inventory",
@@ -96,7 +103,7 @@ class ListDeadLettersTests(TestCase):
             status=DeadLetterMessage.Status.PENDING,
         )
 
-        response = self.client.get("/api/v1/staff/dead-letters/?queue=inventory")
+        response = client.get("/staff/dead-letters/?queue=inventory")
 
         assert response.status_code == 200
         assert len(response.data) == 1
@@ -104,26 +111,27 @@ class ListDeadLettersTests(TestCase):
 
     def test_list_dead_letters_unauthorized(self) -> None:
         """Test listing dead letters without staff permission."""
-        self.client.force_authenticate(user=None)
-        response = self.client.get("/api/v1/staff/dead-letters/")
+        client = APIClient()
+        client.force_authenticate(user=None)
+        response = client.get("/staff/dead-letters/")
 
         assert response.status_code in (401, 403)
 
 
-class ReplayDeadLetterTests(TestCase):
+@pytest.mark.django_db
+@pytest.mark.integration
+class ReplayDeadLetterTests:
     """Tests for POST /api/v1/dead-letters/replay/ endpoint."""
-
-    def setUp(self) -> None:
-        """Set up test client and staff user."""
-        self.client = APIClient()
-        self.staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
-        self.client.force_authenticate(user=self.staff_user)
 
     def test_replay_dead_letter_success(self) -> None:
         """Test replaying a dead letter message as staff."""
         from unittest.mock import patch
+
+        client = APIClient()
+        staff_user = User.objects.create_user(
+            username="staff", is_staff=True, is_superuser=True
+        )
+        client.force_authenticate(user=staff_user)
 
         dead_letter = DeadLetterMessage.objects.create(
             id=uuid.uuid4(),
@@ -136,8 +144,8 @@ class ReplayDeadLetterTests(TestCase):
         )
 
         with patch("apps.outbox.views.call_command"):
-            response = self.client.post(
-                "/api/v1/staff/dead-letters/replay/",
+            response = client.post(
+                "/staff/dead-letters/replay/",
                 {"dead_letter_id": str(dead_letter.id)},
                 format="json",
             )
@@ -147,8 +155,14 @@ class ReplayDeadLetterTests(TestCase):
 
     def test_replay_dead_letter_not_found(self) -> None:
         """Test replaying a non-existent dead letter."""
-        response = self.client.post(
-            "/api/v1/staff/dead-letters/replay/",
+        client = APIClient()
+        staff_user = User.objects.create_user(
+            username="staff", is_staff=True, is_superuser=True
+        )
+        client.force_authenticate(user=staff_user)
+
+        response = client.post(
+            "/staff/dead-letters/replay/",
             {"dead_letter_id": str(uuid.uuid4())},
             format="json",
         )
@@ -158,6 +172,12 @@ class ReplayDeadLetterTests(TestCase):
 
     def test_replay_dead_letter_invalid_status(self) -> None:
         """Test replaying a dead letter that is not pending."""
+        client = APIClient()
+        staff_user = User.objects.create_user(
+            username="staff", is_staff=True, is_superuser=True
+        )
+        client.force_authenticate(user=staff_user)
+
         dead_letter = DeadLetterMessage.objects.create(
             id=uuid.uuid4(),
             queue_name="inventory",
@@ -168,8 +188,8 @@ class ReplayDeadLetterTests(TestCase):
             status=DeadLetterMessage.Status.DISCARDED,
         )
 
-        response = self.client.post(
-            "/api/v1/staff/dead-letters/replay/",
+        response = client.post(
+            "/staff/dead-letters/replay/",
             {"dead_letter_id": str(dead_letter.id)},
             format="json",
         )
@@ -179,9 +199,10 @@ class ReplayDeadLetterTests(TestCase):
 
     def test_replay_dead_letter_unauthorized(self) -> None:
         """Test replaying a dead letter without staff permission."""
-        self.client.force_authenticate(user=None)
-        response = self.client.post(
-            "/api/v1/staff/dead-letters/replay/",
+        client = APIClient()
+        client.force_authenticate(user=None)
+        response = client.post(
+            "/staff/dead-letters/replay/",
             {"dead_letter_id": str(uuid.uuid4())},
             format="json",
         )
@@ -189,19 +210,19 @@ class ReplayDeadLetterTests(TestCase):
         assert response.status_code in (401, 403)
 
 
-class DiscardDeadLetterTests(TestCase):
+@pytest.mark.django_db
+@pytest.mark.integration
+class DiscardDeadLetterTests:
     """Tests for POST /api/v1/dead-letters/discard/ endpoint."""
-
-    def setUp(self) -> None:
-        """Set up test client and staff user."""
-        self.client = APIClient()
-        self.staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
-        self.client.force_authenticate(user=self.staff_user)
 
     def test_discard_dead_letter_success(self) -> None:
         """Test discarding a dead letter message as staff."""
+        client = APIClient()
+        staff_user = User.objects.create_user(
+            username="staff", is_staff=True, is_superuser=True
+        )
+        client.force_authenticate(user=staff_user)
+
         dead_letter = DeadLetterMessage.objects.create(
             id=uuid.uuid4(),
             queue_name="inventory",
@@ -212,8 +233,8 @@ class DiscardDeadLetterTests(TestCase):
             status=DeadLetterMessage.Status.PENDING,
         )
 
-        response = self.client.post(
-            "/api/v1/staff/dead-letters/discard/",
+        response = client.post(
+            "/staff/dead-letters/discard/",
             {"dead_letter_id": str(dead_letter.id)},
             format="json",
         )
@@ -226,8 +247,14 @@ class DiscardDeadLetterTests(TestCase):
 
     def test_discard_dead_letter_not_found(self) -> None:
         """Test discarding a non-existent dead letter."""
-        response = self.client.post(
-            "/api/v1/staff/dead-letters/discard/",
+        client = APIClient()
+        staff_user = User.objects.create_user(
+            username="staff", is_staff=True, is_superuser=True
+        )
+        client.force_authenticate(user=staff_user)
+
+        response = client.post(
+            "/staff/dead-letters/discard/",
             {"dead_letter_id": str(uuid.uuid4())},
             format="json",
         )
@@ -237,6 +264,12 @@ class DiscardDeadLetterTests(TestCase):
 
     def test_discard_dead_letter_invalid_status(self) -> None:
         """Test discarding a dead letter that is not pending."""
+        client = APIClient()
+        staff_user = User.objects.create_user(
+            username="staff", is_staff=True, is_superuser=True
+        )
+        client.force_authenticate(user=staff_user)
+
         dead_letter = DeadLetterMessage.objects.create(
             id=uuid.uuid4(),
             queue_name="inventory",
@@ -247,8 +280,8 @@ class DiscardDeadLetterTests(TestCase):
             status=DeadLetterMessage.Status.DISCARDED,
         )
 
-        response = self.client.post(
-            "/api/v1/staff/dead-letters/discard/",
+        response = client.post(
+            "/staff/dead-letters/discard/",
             {"dead_letter_id": str(dead_letter.id)},
             format="json",
         )
@@ -258,9 +291,10 @@ class DiscardDeadLetterTests(TestCase):
 
     def test_discard_dead_letter_unauthorized(self) -> None:
         """Test discarding a dead letter without staff permission."""
-        self.client.force_authenticate(user=None)
-        response = self.client.post(
-            "/api/v1/staff/dead-letters/discard/",
+        client = APIClient()
+        client.force_authenticate(user=None)
+        response = client.post(
+            "/staff/dead-letters/discard/",
             {"dead_letter_id": str(uuid.uuid4())},
             format="json",
         )

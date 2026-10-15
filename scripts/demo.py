@@ -5,6 +5,12 @@ import subprocess
 import sys
 import time
 
+# Fix encoding on Windows
+if sys.platform == "win32":
+    import codecs
+    sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer, "strict")
+    sys.stderr = codecs.getwriter("utf-8")(sys.stderr.buffer, "strict")
+
 
 def run_command(cmd: str, description: str) -> bool:
     """Run a command and return success status.
