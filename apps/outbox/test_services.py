@@ -5,7 +5,7 @@ import uuid
 import pytest
 from django.test import TestCase
 
-from apps.outbox.models import OutboxMessage
+from apps.outbox.models import DeadLetterMessage, OutboxMessage
 from apps.outbox.services import (
     create_outbox_message,
     get_pending_messages,
@@ -155,6 +155,55 @@ class TestOutboxServices:
         with pytest.raises(OutboxMessage.DoesNotExist):
             mark_message_failed(uuid.uuid4(), "test error")
 
+    def test_mark_message_failed_preserves_payload(self):
+        """Test marking failed preserves original payload and adds error."""
+        original_payload = {"order_id": "123", "amount": 100}
+        message = OutboxMessage.objects.create(
+            message_type="TestMessage",
+            payload=original_payload,
+            aggregate_type="test",
+            aggregate_id=uuid.uuid4(),
+            correlation_id=uuid.uuid4(),
+            status=OutboxMessage.Status.PENDING,
+        )
+        error_msg = "Payment gateway timeout"
+
+        updated = mark_message_failed(message.id, error_msg)
+
+        assert updated.status == OutboxMessage.Status.FAILED
+        assert "_error" in updated.payload
+        assert updated.payload["_error"] == error_msg
+        assert updated.payload["order_id"] == "123"  # Original data preserved
+
+    def test_get_pending_messages_ordered_by_created_at(self):
+        """Test pending messages are ordered by created_at."""
+        import time
+
+        # Create messages with delays to ensure different timestamps
+        message1 = OutboxMessage.objects.create(
+            message_type="TestMessage1",
+            payload={},
+            aggregate_type="test",
+            aggregate_id=uuid.uuid4(),
+            correlation_id=uuid.uuid4(),
+            status=OutboxMessage.Status.PENDING,
+        )
+        time.sleep(0.01)
+        message2 = OutboxMessage.objects.create(
+            message_type="TestMessage2",
+            payload={},
+            aggregate_type="test",
+            aggregate_id=uuid.uuid4(),
+            correlation_id=uuid.uuid4(),
+            status=OutboxMessage.Status.PENDING,
+        )
+
+        pending = get_pending_messages(limit=10)
+
+        assert len(pending) == 2
+        assert pending[0].id == message1.id
+        assert pending[1].id == message2.id
+
 
 class OutboxMessageModelTests(TestCase):
     """Tests for OutboxMessage model."""
@@ -182,7 +231,6 @@ class DeadLetterMessageModelTests(TestCase):
 
     def test_dead_letter_message_str_representation(self) -> None:
         """Test string representation of DeadLetterMessage."""
-        from apps.outbox.models import DeadLetterMessage
 
         dead_letter = DeadLetterMessage.objects.create(
             queue_name="payments",

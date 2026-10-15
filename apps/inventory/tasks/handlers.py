@@ -5,6 +5,7 @@ from datetime import datetime
 import structlog
 from celery import shared_task
 from celery.exceptions import Retry
+from django.db import transaction
 
 from apps.inbox.services import DuplicateMessageError, is_message_processed, process_message
 from apps.inventory.services import reserve_stock
@@ -56,41 +57,42 @@ def handle_order_created(message: dict) -> None:
         # Reserve stock for each item
         for item in order_created.items:
             try:
-                reservation = reserve_stock(
-                    order_id=order_created.order_id,
-                    product_id=item.product_id,
-                    quantity=item.quantity,
-                )
+                with transaction.atomic():
+                    reservation = reserve_stock(
+                        order_id=order_created.order_id,
+                        product_id=item.product_id,
+                        quantity=item.quantity,
+                    )
 
-                # Emit StockReserved message
-                from apps.messaging.messages import StockReserved
+                    # Emit StockReserved message
+                    from apps.messaging.messages import StockReserved
 
-                stock_reserved = StockReserved(
-                    correlation_id=order_created.correlation_id,
-                    causation_id=order_created.correlation_id,
-                    timestamp=datetime.now().isoformat(),
-                    order_id=order_created.order_id,
-                    product_id=item.product_id,
-                    quantity=item.quantity,
-                    reservation_id=reservation.id,
-                )
+                    stock_reserved = StockReserved(
+                        correlation_id=order_created.correlation_id,
+                        causation_id=order_created.correlation_id,
+                        timestamp=datetime.now().isoformat(),
+                        order_id=order_created.order_id,
+                        product_id=item.product_id,
+                        quantity=item.quantity,
+                        reservation_id=reservation.id,
+                    )
 
-                create_outbox_message(
-                    message_type="StockReserved",
-                    payload=stock_reserved.model_dump(mode="json"),
-                    aggregate_type="inventory",
-                    aggregate_id=reservation.id,
-                    correlation_id=order_created.correlation_id,
-                    causation_id=order_created.correlation_id,
-                )
+                    create_outbox_message(
+                        message_type="StockReserved",
+                        payload=stock_reserved.model_dump(mode="json"),
+                        aggregate_type="inventory",
+                        aggregate_id=reservation.id,
+                        correlation_id=order_created.correlation_id,
+                        causation_id=order_created.correlation_id,
+                    )
 
-                logger.info(
-                    "Stock reserved successfully",
-                    order_id=str(order_created.order_id),
-                    product_id=str(item.product_id),
-                    quantity=item.quantity,
-                    reservation_id=str(reservation.id),
-                )
+                    logger.info(
+                        "Stock reserved successfully",
+                        order_id=str(order_created.order_id),
+                        product_id=str(item.product_id),
+                        quantity=item.quantity,
+                        reservation_id=str(reservation.id),
+                    )
 
             except Exception as e:
                 # Emit StockReservationFailed message

@@ -196,3 +196,64 @@ class TestDashboardViews:
         """Test inject failure rejects GET."""
         response = self.client.get("/laboratory/inject-failure/")
         assert response.status_code == 405
+
+    def test_overview_view_zero_orders(self):
+        """Test overview with zero orders (edge case)."""
+        Order.objects.all().delete()
+        response = self.client.get("/")
+        assert response.status_code == 200
+        assert response.context["total_orders"] == 0
+        assert response.context["success_rate"] == 0
+
+    def test_orders_view_status_and_search_combined(self):
+        """Test orders with both status filter and search."""
+        Order.objects.create(
+            id=uuid.uuid4(),
+            customer_id=uuid.uuid4(),
+            total_amount=100.00,
+            status=Order.Status.PENDING,
+        )
+        response = self.client.get("/orders/?status=PENDING&search=test")
+        assert response.status_code == 200
+
+    def test_replay_dead_letter_exception_handling(self):
+        """Test replay dead letter handles exceptions."""
+        from unittest.mock import patch
+
+        dead_letter = DeadLetterMessage.objects.create(
+            id=uuid.uuid4(),
+            queue_name="test",
+            message_type="TestMessage",
+            payload={"test": "data"},
+            error_message="Test error",
+            correlation_id=uuid.uuid4(),
+            status=DeadLetterMessage.Status.PENDING,
+        )
+
+        with patch(
+            "apps.dashboard.views.mark_dead_letter_replayed", side_effect=Exception("DB error")
+        ):
+            response = self.client.post(f"/dead-letters/{dead_letter.id}/replay/")
+            assert response.status_code == 500
+            assert "error" in response.json()
+
+    def test_discard_dead_letter_exception_handling(self):
+        """Test discard dead letter handles exceptions."""
+        from unittest.mock import patch
+
+        dead_letter = DeadLetterMessage.objects.create(
+            id=uuid.uuid4(),
+            queue_name="test",
+            message_type="TestMessage",
+            payload={"test": "data"},
+            error_message="Test error",
+            correlation_id=uuid.uuid4(),
+            status=DeadLetterMessage.Status.PENDING,
+        )
+
+        with patch(
+            "apps.dashboard.views.mark_dead_letter_discarded", side_effect=Exception("DB error")
+        ):
+            response = self.client.post(f"/dead-letters/{dead_letter.id}/discard/")
+            assert response.status_code == 500
+            assert "error" in response.json()

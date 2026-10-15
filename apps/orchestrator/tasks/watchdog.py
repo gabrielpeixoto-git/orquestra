@@ -1,6 +1,6 @@
 """Celery beat task for watchdog monitoring of stuck orders."""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import structlog
 from celery import shared_task
@@ -93,7 +93,7 @@ def handle_stuck_order(order: Order) -> None:
     order_failed = OrderFailed(
         correlation_id=order.id,  # Use order ID as correlation_id for simplicity
         causation_id=order.id,
-        timestamp=datetime.now().isoformat(),
+        timestamp=timezone.now().isoformat(),
         order_id=cancelled_order.id,
         customer_id=cancelled_order.customer_id,
         reason=f"Order stuck in PENDING for more than {SAGA_TIMEOUT_MINUTES} minutes",

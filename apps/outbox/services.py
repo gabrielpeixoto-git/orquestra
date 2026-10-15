@@ -4,6 +4,7 @@ import uuid
 
 import structlog
 from django.db import transaction
+from django.utils import timezone
 
 from apps.outbox.models import OutboxMessage
 
@@ -69,7 +70,7 @@ def mark_message_published(message_id: uuid.UUID) -> OutboxMessage:
     with transaction.atomic():
         message = OutboxMessage.objects.select_for_update().get(id=message_id)
         message.status = OutboxMessage.Status.PUBLISHED
-        message.published_at = transaction.now() if hasattr(transaction, "now") else None
+        message.published_at = timezone.now()
         message.save()
 
     logger.info(

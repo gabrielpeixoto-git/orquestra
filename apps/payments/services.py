@@ -70,7 +70,7 @@ def process_payment(
     # Simulate timeout for testing
     if force_timeout:
         logger.warning("Simulating gateway timeout", order_id=str(order_id))
-        time.sleep(30)  # Simulate timeout
+        time.sleep(0.1)  # Simulate timeout (short for testing)
         error_msg = f"Payment gateway timeout for order {order_id}"
         raise PaymentTimeoutError(error_msg)
 

@@ -164,6 +164,58 @@ class MarkDeadLetterDiscardedTests(TestCase):
         dead_letter.refresh_from_db()
         assert dead_letter.status == DeadLetterMessage.Status.DISCARDED
 
+    def test_get_pending_dead_letters_with_queue_filter(self):
+        """Test get_pending_dead_letters filters by queue name."""
+        from apps.outbox.services_deadletter import get_pending_dead_letters
+
+        # Create messages for different queues
+        dlq1 = DeadLetterMessage.objects.create(
+            queue_name="queue1",
+            message_type="TestMessage",
+            payload={"test": "data"},
+            error_message="Test error",
+            correlation_id=uuid.uuid4(),
+            status=DeadLetterMessage.Status.PENDING,
+        )
+        DeadLetterMessage.objects.create(
+            queue_name="queue2",
+            message_type="TestMessage",
+            payload={"test": "data"},
+            error_message="Test error",
+            correlation_id=uuid.uuid4(),
+            status=DeadLetterMessage.Status.PENDING,
+        )
+
+        # Filter by queue1
+        pending = get_pending_dead_letters(queue_name="queue1")
+        assert len(pending) == 1
+        assert pending[0].id == dlq1.id
+
+    def test_should_send_to_dlq_max_retries(self):
+        """Test should_send_to_dlq with MaxRetriesExceededError."""
+        from celery.exceptions import MaxRetriesExceededError
+
+        from apps.outbox.services_deadletter import should_send_to_dlq
+
+        exception = MaxRetriesExceededError("Max retries exceeded")
+        assert should_send_to_dlq(exception) is True
+
+    def test_should_send_to_dlq_operational_error(self):
+        """Test should_send_to_dlq with OperationalError."""
+        from kombu.exceptions import OperationalError
+
+        from apps.outbox.services_deadletter import should_send_to_dlq
+
+        exception = OperationalError("Connection failed")
+        assert should_send_to_dlq(exception) is True
+
+    def test_should_send_to_dlq_other_exception(self):
+        """Test should_send_to_dlq with other exception."""
+        from apps.outbox.services_deadletter import should_send_to_dlq
+
+        exception = ValueError("Invalid value")
+        assert should_send_to_dlq(exception) is False
+
 
 class ShouldSendToDlqTests(TestCase):
     """Tests for should_send_to_dlq service."""

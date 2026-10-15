@@ -104,3 +104,13 @@
 - [x] SSE no lugar do polling
 
 **Critério de Aceite:** kustomize build válido, kind apply funciona, SSE funciona
+
+## Fase 9: Consumidores Alternativos ✅
+- [x] Consumer RabbitMQ alternativo (scripts/consumer.py)
+- [x] Mapeamento por fila e tipo de mensagem
+- [x] Suporte a múltiplos handlers por mensagem
+- [x] Fix encoding no Windows
+- [x] Integração com docker-compose (perfil alternative)
+- [x] Documentação no README e TROUBLESHOOTING
+
+**Critério de Aceite:** Fluxo completo da saga funcionando com consumidores alternativos

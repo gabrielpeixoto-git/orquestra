@@ -261,18 +261,6 @@
 
 ---
 
-## 📋 Fase 8 (Opcional): Kubernetes (PENDENTE)
-- [ ] README pt-BR (resumo EN, Mermaid, quickstart 3 comandos)
-- [ ] Comando demo
-- [ ] ADRs
-- [ ] LICENSE MIT
-- [ ] Teste de clone limpo → up → demo
-- [ ] Atualizar ROADMAP
-
-**Critério de Aceite**: Demo funciona, ROADMAP completo
-
----
-
 ## ✅ Fase 8: Kubernetes + SSE (COMPLETA)
 
 ### ✅ Concluído
@@ -297,6 +285,34 @@
 
 ---
 
+## ✅ Fase 9: Consumidores Alternativos (COMPLETA)
+
+### ✅ Concluído
+- [x] Consumer RabbitMQ alternativo (scripts/consumer.py)
+  - Chama handlers Celery diretamente (bypass routing key issues)
+  - Mapeamento por fila e tipo de mensagem
+  - Suporte a múltiplos handlers por mensagem (ex: PaymentProcessed → notifications + orchestrator + audit)
+  - Fix encoding no Windows (UTF-8)
+  - Idempotência via InboxMessage
+- [x] Integração com docker-compose
+  - Perfil `alternative` com 5 containers (consumer-inventory, consumer-payments, consumer-notifications, consumer-orchestrator, consumer-audit)
+  - Dependências corretas (db, redis, rabbitmq)
+- [x] Script run_all_consumers.py
+  - Inicia todos os 5 consumidores em paralelo
+  - Auto-restart em caso de falha
+  - Corrigido para incluir todas as filas
+- [x] Documentação
+  - README.md com instruções de uso
+  - TROUBLESHOOTING.md com seção sobre workaround
+- [x] Teste do fluxo completo
+  - 2 pedidos criados e processados com sucesso
+  - Saga completa: OrderCreated → StockReserved → PaymentProcessed → OrderConfirmed
+  - Estoque atualizado corretamente (44 → 42)
+
+**Status**: ✅ Fase 9 completa - Consumidores alternativos funcionando
+
+---
+
 ## 🎉 Status Final do Projeto
 
 **Fases 0-8 completas!** O projeto Orquestra está pronto para produção com:
@@ -307,6 +323,7 @@
 - CI/CD automatizado
 - Kubernetes manifests
 - SSE para real-time updates
+- **Consumidores RabbitMQ alternativos** (workaround para problemas de Celery)
 
 ---
 

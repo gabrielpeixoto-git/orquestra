@@ -3,6 +3,8 @@
 import uuid
 
 import pytest
+from django.db import IntegrityError
+from django.test import TestCase
 
 from apps.inbox.models import InboxMessage
 from apps.inbox.services import DuplicateMessageError, is_message_processed, process_message
@@ -97,6 +99,38 @@ class TestInboxMessageModel:
         str_repr = str(inbox_msg)
         assert "test_consumer" in str_repr
         assert str(message_id) in str_repr
+
+    def test_inbox_message_unique_constraint(self):
+        """Test that unique constraint works on consumer + message_id."""
+        message_id = uuid.uuid4()
+        consumer = "test_consumer"
+
+        # Create first message
+        InboxMessage.objects.create(
+            consumer=consumer,
+            message_id=message_id,
+            message_type="TestMessage",
+            payload={"test": "data"},
+        )
+
+        # Try to create duplicate - should raise IntegrityError
+        with pytest.raises(IntegrityError):
+            InboxMessage.objects.create(
+                consumer=consumer,
+                message_id=message_id,
+                message_type="TestMessage",
+                payload={"test": "data2"},
+            )
+
+
+class InboxURLTests(TestCase):
+    """Tests for inbox URLs."""
+
+    def test_inbox_urls_import(self):
+        """Test inbox URLs can be imported."""
+        from apps.inbox import urls
+
+        assert urls is not None
 
     def test_process_message_raises_on_non_duplicate_error(self):
         """Test that non-duplicate errors are raised."""

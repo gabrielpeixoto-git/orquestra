@@ -6,8 +6,8 @@ WORKDIR /app
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Copy pyproject.toml and uv.lock
-COPY pyproject.toml uv.lock ./
+# Copy pyproject.toml, uv.lock and README.md
+COPY pyproject.toml uv.lock README.md ./
 
 # Install dependencies
 RUN uv sync --locked --no-dev
@@ -21,7 +21,6 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 WORKDIR /app
 
 # Copy virtual environment from builder
-COPY --from=builder /root/.local /root/.local
 COPY --from=builder /app/.venv /app/.venv
 
 # Ensure scripts in .venv are usable

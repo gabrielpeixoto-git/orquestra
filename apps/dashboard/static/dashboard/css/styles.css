@@ -1,5 +1,10 @@
 /* Orquestra Dashboard Styles */
 
+/* Alpine.js x-cloak - hide elements until Alpine initializes */
+[x-cloak] {
+  display: none !important;
+}
+
 /* Custom CSS Variables */
 :root {
   /* Light Mode */
@@ -19,6 +24,20 @@
   --status-confirmed: #10b981;
   --status-cancelled: #ef4444;
   --status-failed: #ef4444;
+}
+
+.dark {
+  /* Dark Mode */
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-bg-tertiary: #334155;
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #9ca3af;
+  --color-border: #334155;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-info: #60a5fa;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -91,6 +110,11 @@ body {
   color: #92400e;
 }
 
+.dark .badge-pending {
+  background-color: #78350f;
+  color: #fcd34d;
+}
+
 @media (prefers-color-scheme: dark) {
   .badge-pending {
     background-color: #78350f;
@@ -101,6 +125,11 @@ body {
 .badge-confirmed {
   background-color: #d1fae5;
   color: #065f46;
+}
+
+.dark .badge-confirmed {
+  background-color: #064e3b;
+  color: #6ee7b7;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -114,6 +143,12 @@ body {
 .badge-failed {
   background-color: #fee2e2;
   color: #991b1b;
+}
+
+.dark .badge-cancelled,
+.dark .badge-failed {
+  background-color: #7f1d1d;
+  color: #fca5a5;
 }
 
 @media (prefers-color-scheme: dark) {

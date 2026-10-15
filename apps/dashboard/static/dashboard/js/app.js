@@ -1,5 +1,45 @@
 // Orquestra Dashboard JavaScript
 
+// Theme toggle functionality
+function initThemeToggle() {
+  const isDark = localStorage.getItem('theme') === 'dark' ||
+                 (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+  const button = document.getElementById('theme-toggle');
+  const icon = document.getElementById('theme-icon');
+  const text = document.getElementById('theme-text');
+
+  function applyTheme(dark) {
+    if (dark) {
+      document.documentElement.classList.add('dark');
+      if (icon) icon.textContent = '☀️';
+      if (text) text.textContent = 'Modo Claro';
+    } else {
+      document.documentElement.classList.remove('dark');
+      if (icon) icon.textContent = '🌙';
+      if (text) text.textContent = 'Modo Escuro';
+    }
+  }
+
+  applyTheme(isDark);
+
+  if (button) {
+    button.addEventListener('click', () => {
+      const currentDark = document.documentElement.classList.contains('dark');
+      const newDark = !currentDark;
+      localStorage.setItem('theme', newDark ? 'dark' : 'light');
+      applyTheme(newDark);
+    });
+  }
+
+  // Listen for system theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      applyTheme(e.matches);
+    }
+  });
+}
+
 // Global state for Alpine.js
 document.addEventListener('alpine:init', () => {
   // Theme toggle component
@@ -156,6 +196,9 @@ function createChart(ctx, config) {
 
 // Initialize tooltips
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize theme toggle
+  initThemeToggle();
+
   // Add smooth scroll behavior
   document.documentElement.style.scrollBehavior = 'smooth';
 

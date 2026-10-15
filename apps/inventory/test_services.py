@@ -262,3 +262,13 @@ class GetProductTests(TestCase):
 
         with pytest.raises(ProductNotFoundError):
             get_product(product_id)
+
+
+class InventoryURLTests(TestCase):
+    """Tests for inventory URLs."""
+
+    def test_inventory_urls_import(self):
+        """Test inventory URLs can be imported."""
+        from apps.inventory import urls
+
+        assert urls is not None

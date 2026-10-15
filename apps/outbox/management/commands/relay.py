@@ -56,7 +56,9 @@ class Command(BaseCommand):
         logger.info("Starting outbox relay", limit=limit, rabbitmq_url=rabbitmq_url)
 
         try:
-            connection = pika.BlockingConnection(pika.URLParameters(rabbitmq_url))
+            parameters = pika.URLParameters(rabbitmq_url)
+            parameters.heartbeat = 600
+            connection = pika.BlockingConnection(parameters)
             channel = connection.channel()
 
             # Declare exchange

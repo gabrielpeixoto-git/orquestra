@@ -115,3 +115,26 @@ class AuditLogModelTests(TestCase):
 
         assert audit_log.action == "ORDER_CREATED"
         assert audit_log.entity_type == "order"
+
+    def test_audit_log_with_json_changes(self):
+        """Test AuditLog with JSON changes field."""
+        audit_log = AuditLog.objects.create(
+            id=uuid.uuid4(),
+            action=AuditLog.Action.ORDER_CREATED,
+            actor="user@example.com",
+            entity_type="order",
+            entity_id=uuid.uuid4(),
+            changes={"key": "value", "nested": {"data": "test"}},
+        )
+
+        assert audit_log.changes == {"key": "value", "nested": {"data": "test"}}
+
+
+class AuditURLTests(TestCase):
+    """Tests for audit URLs."""
+
+    def test_audit_urls_import(self):
+        """Test audit URLs can be imported."""
+        from apps.audit import urls
+
+        assert urls is not None

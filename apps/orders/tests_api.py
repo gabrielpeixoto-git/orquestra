@@ -111,6 +111,40 @@ class CreateOrderAPITests(TestCase):
 
         assert response.status_code == 400
 
+    def test_create_order_with_invalid_data_raises_creation_error(self) -> None:
+        """Test creating an order with invalid data raises OrderCreationError."""
+        from unittest.mock import patch
+
+        from apps.orders.services import OrderCreationError
+
+        customer_id = uuid.uuid4()
+        data = {
+            "customer_id": str(customer_id),
+            "items": [
+                {
+                    "product_id": str(uuid.uuid4()),
+                    "quantity": 1,
+                    "unit_price": "10.00",
+                }
+            ],
+        }
+
+        with patch("apps.orders.views.create_order", side_effect=OrderCreationError("DB error")):
+            response = self.client.post("/api/v1/orders/", data, format="json")
+
+        assert response.status_code == 400
+
+    def test_create_order_with_serializer_error(self) -> None:
+        """Test creating an order with invalid serializer data."""
+        data = {
+            "customer_id": "invalid-uuid",
+            "items": [],
+        }
+
+        response = self.client.post("/api/v1/orders/", data, format="json")
+
+        assert response.status_code == 400
+
 
 class OrderDetailAPITests(TestCase):
     """Tests for GET /api/v1/orders/<uuid>/ endpoint."""
@@ -146,5 +180,11 @@ class OrderDetailAPITests(TestCase):
         """Test getting a non-existent order returns 404."""
         order_id = uuid.uuid4()
         response = self.client.get(f"/api/v1/orders/{order_id}/")
+
+        assert response.status_code == 404
+
+    def test_get_order_with_invalid_uuid(self) -> None:
+        """Test getting an order with invalid UUID."""
+        response = self.client.get("/api/v1/orders/invalid-uuid/")
 
         assert response.status_code == 404

@@ -39,13 +39,10 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
-      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit load_definitions /etc/rabbitmq/definitions.json"
     ports:
       - "5672:5672"
       - "15672:15672"
       - "15692:15692"
-    volumes:
-      - ./deploy/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
@@ -179,6 +176,157 @@ services:
       - orquestra-net
     profiles:
       - lite
+
+  # Alternative RabbitMQ consumers (bypass Celery routing issues)
+  consumer-inventory:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orquestra-consumer-inventory
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SECRET_KEY: ${SECRET_KEY}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: orquestra
+      DB_USER: orquestra
+      DB_PASSWORD: orquestra
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    command: python scripts/consumer.py inventory
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orquestra-net
+    profiles:
+      - alternative
+
+  consumer-payments:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orquestra-consumer-payments
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SECRET_KEY: ${SECRET_KEY}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: orquestra
+      DB_USER: orquestra
+      DB_PASSWORD: orquestra
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    command: python scripts/consumer.py payments
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orquestra-net
+    profiles:
+      - alternative
+
+  consumer-notifications:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orquestra-consumer-notifications
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SECRET_KEY: ${SECRET_KEY}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: orquestra
+      DB_USER: orquestra
+      DB_PASSWORD: orquestra
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    command: python scripts/consumer.py notifications
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orquestra-net
+    profiles:
+      - alternative
+
+  consumer-orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orquestra-consumer-orchestrator
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SECRET_KEY: ${SECRET_KEY}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: orquestra
+      DB_USER: orquestra
+      DB_PASSWORD: orquestra
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    command: python scripts/consumer.py orchestrator
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orquestra-net
+    profiles:
+      - alternative
+
+  consumer-audit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orquestra-consumer-audit
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      SECRET_KEY: ${SECRET_KEY}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: orquestra
+      DB_USER: orquestra
+      DB_PASSWORD: orquestra
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    command: python scripts/consumer.py audit
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - orquestra-net
+    profiles:
+      - alternative
 
   jaeger:
     image: jaegertracing/all-in-one:latest

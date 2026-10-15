@@ -104,3 +104,13 @@ class NotificationModelTests(TestCase):
         assert str(notification.id) in str_repr
         assert "EMAIL" in str_repr
         assert "user@example.com" in str_repr
+
+
+class NotificationsURLTests(TestCase):
+    """Tests for notifications URLs."""
+
+    def test_notifications_urls_import(self):
+        """Test notifications URLs can be imported."""
+        from apps.notifications import urls
+
+        assert urls is not None

@@ -229,3 +229,31 @@ def test_relay_with_custom_limit() -> None:
         # Should only process 3 messages
         pending_count = OutboxMessage.objects.filter(status=OutboxMessage.Status.PENDING).count()
         assert pending_count == 2
+
+
+@pytest.mark.django_db
+def test_relay_with_publish_error() -> None:
+    """Test relay command handles publish errors."""
+    from apps.outbox.management.commands.relay import Command
+    from apps.outbox.models import OutboxMessage
+
+    message = OutboxMessage.objects.create(
+        message_type="OrderCreated",
+        payload={"test": "data"},
+        aggregate_type="order",
+        aggregate_id=uuid.uuid4(),
+        correlation_id=uuid.uuid4(),
+        status=OutboxMessage.Status.PENDING,
+    )
+
+    with patch("pika.BlockingConnection") as mock_connection:
+        mock_channel = MagicMock()
+        mock_channel.basic_publish.side_effect = Exception("Publish failed")
+        mock_connection.return_value.channel.return_value = mock_channel
+
+        command = Command()
+        command.handle(limit=100, rabbitmq_url="amqp://localhost")
+
+        # Should mark message as failed due to publish error
+        message.refresh_from_db()
+        assert message.status == OutboxMessage.Status.FAILED

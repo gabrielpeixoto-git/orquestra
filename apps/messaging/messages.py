@@ -142,9 +142,11 @@ def serialize_message(message: BaseMessage) -> dict[str, Any]:
         message: Message to serialize.
 
     Returns:
-        Serialized message as dictionary.
+        Serialized message as dictionary with message_type included.
     """
-    return message.model_dump(mode="json")
+    payload = message.model_dump(mode="json")
+    payload["message_type"] = message.__class__.__name__
+    return payload
 
 
 def deserialize_message(message_type: str, payload: dict[str, Any]) -> BaseMessage:
@@ -165,4 +167,6 @@ def deserialize_message(message_type: str, payload: dict[str, Any]) -> BaseMessa
         error_msg = f"Unknown message type: {message_type}"
         raise ValueError(error_msg)
 
-    return message_class(**payload)
+    # Remove message_type from payload if present (it's metadata, not a field)
+    clean_payload = {k: v for k, v in payload.items() if k != "message_type"}
+    return message_class(**clean_payload)

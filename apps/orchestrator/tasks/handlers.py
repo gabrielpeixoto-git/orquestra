@@ -1,10 +1,9 @@
 """Celery task handlers for orchestrator (saga coordination)."""
 
-from datetime import datetime
-
 import structlog
 from celery import shared_task
 from celery.exceptions import Retry
+from django.utils import timezone
 
 from apps.inbox.services import DuplicateMessageError, is_message_processed, process_message
 from apps.inventory.models import StockReservation
@@ -71,7 +70,7 @@ def handle_payment_processed(message: dict) -> None:
         order_confirmed = OrderConfirmed(
             correlation_id=payment_processed.correlation_id,
             causation_id=payment_processed.correlation_id,
-            timestamp=datetime.now().isoformat(),
+            timestamp=timezone.now().isoformat(),
             order_id=order.id,
             customer_id=order.customer_id,
             total_amount=order.total_amount,
@@ -182,7 +181,7 @@ def handle_payment_failed(message: dict) -> None:
         order_failed = OrderFailed(
             correlation_id=payment_failed.correlation_id,
             causation_id=payment_failed.correlation_id,
-            timestamp=datetime.now().isoformat(),
+            timestamp=timezone.now().isoformat(),
             order_id=order.id,
             customer_id=order.customer_id,
             reason=payment_failed.reason,
@@ -277,7 +276,7 @@ def handle_stock_reservation_failed(message: dict) -> None:
         order_failed = OrderFailed(
             correlation_id=stock_failed.correlation_id,
             causation_id=stock_failed.correlation_id,
-            timestamp=datetime.now().isoformat(),
+            timestamp=timezone.now().isoformat(),
             order_id=order.id,
             customer_id=order.customer_id,
             reason=stock_failed.reason,

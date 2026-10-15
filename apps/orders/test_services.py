@@ -226,3 +226,28 @@ class OrderModelTests(TestCase):
         assert "Order" in str_repr
         assert str(order.id) in str_repr
         assert "PENDING" in str_repr
+
+    def test_order_item_str_representation(self):
+        """Test string representation of OrderItem."""
+        from apps.orders.models import OrderItem
+
+        order = Order.objects.create(
+            id=uuid.uuid4(),
+            customer_id=uuid.uuid4(),
+            total_amount=Decimal("100.00"),
+            status=Order.Status.PENDING,
+        )
+
+        item = OrderItem.objects.create(
+            id=uuid.uuid4(),
+            order=order,
+            product_id=uuid.uuid4(),
+            quantity=2,
+            unit_price=Decimal("50.00"),
+            total_price=Decimal("100.00"),
+        )
+
+        str_repr = str(item)
+        assert "OrderItem" in str_repr
+        assert str(item.product_id) in str_repr
+        assert "x2" in str_repr

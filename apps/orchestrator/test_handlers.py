@@ -1,7 +1,7 @@
 """Tests for orchestrator handlers."""
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from unittest.mock import patch
 
@@ -32,7 +32,7 @@ def test_handle_payment_processed_idempotent(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "payment_id": str(uuid.uuid4()),
         "amount": 100.00,
@@ -55,7 +55,7 @@ def test_handle_payment_processed_success(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "payment_id": str(uuid.uuid4()),
         "amount": 100.00,
@@ -78,7 +78,7 @@ def test_handle_payment_processed_duplicate_message(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "payment_id": str(uuid.uuid4()),
         "amount": 100.00,
@@ -102,7 +102,7 @@ def test_handle_payment_processed_creates_order_confirmed_message(order: Order) 
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "payment_id": str(uuid.uuid4()),
         "amount": 100.00,
@@ -126,7 +126,7 @@ def test_handle_payment_failed_idempotent(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "amount": 100.00,
         "reason": "Insufficient funds",
@@ -148,7 +148,7 @@ def test_handle_payment_failed_success(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "amount": 100.00,
         "reason": "Insufficient funds",
@@ -170,7 +170,7 @@ def test_handle_payment_failed_duplicate_message(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "amount": 100.00,
         "reason": "Insufficient funds",
@@ -206,13 +206,13 @@ def test_handle_payment_failed_with_stock_compensation(order: Order) -> None:
         order_id=order.id,
         product_id=product_id,
         quantity=10,
-        expires_at=datetime.now(),
+        expires_at=datetime.now(UTC),
     )
 
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "amount": 100.00,
         "reason": "Insufficient funds",
@@ -252,20 +252,20 @@ def test_handle_payment_failed_with_multiple_reservations(order: Order) -> None:
         order_id=order.id,
         product_id=product_id1,
         quantity=5,
-        expires_at=datetime.now(),
+        expires_at=datetime.now(UTC),
     )
     StockReservation.objects.create(
         id=uuid.uuid4(),
         order_id=order.id,
         product_id=product_id2,
         quantity=3,
-        expires_at=datetime.now(),
+        expires_at=datetime.now(UTC),
     )
 
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "amount": 100.00,
         "reason": "Insufficient funds",
@@ -306,20 +306,20 @@ def test_handle_payment_failed_with_release_error_continues(order: Order) -> Non
         order_id=order.id,
         product_id=product_id1,
         quantity=5,
-        expires_at=datetime.now(),
+        expires_at=datetime.now(UTC),
     )
     StockReservation.objects.create(
         id=uuid.uuid4(),
         order_id=order.id,
         product_id=product_id2,
         quantity=3,
-        expires_at=datetime.now(),
+        expires_at=datetime.now(UTC),
     )
 
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "amount": 100.00,
         "reason": "Insufficient funds",
@@ -342,7 +342,7 @@ def test_handle_stock_reservation_failed_idempotent(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "product_id": str(uuid.uuid4()),
         "requested_quantity": 10,
@@ -366,7 +366,7 @@ def test_handle_stock_reservation_failed_success(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "product_id": str(uuid.uuid4()),
         "requested_quantity": 10,
@@ -388,7 +388,7 @@ def test_handle_stock_reservation_failed_creates_order_failed_message(order: Ord
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "product_id": str(uuid.uuid4()),
         "requested_quantity": 10,
@@ -415,7 +415,7 @@ def test_handle_stock_reservation_failed_duplicate_message(order: Order) -> None
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "product_id": str(uuid.uuid4()),
         "requested_quantity": 10,
@@ -440,7 +440,7 @@ def test_handle_payment_processed_raises_on_exception(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "payment_id": str(uuid.uuid4()),
         "amount": 100.00,
@@ -465,7 +465,7 @@ def test_handle_payment_failed_raises_on_exception(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "amount": 100.00,
         "reason": "Insufficient funds",
@@ -486,7 +486,7 @@ def test_handle_stock_reservation_failed_raises_on_exception(order: Order) -> No
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "product_id": str(uuid.uuid4()),
         "requested_quantity": 10,
@@ -509,7 +509,7 @@ def test_handle_payment_processed_send_to_dlq(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "payment_id": str(uuid.uuid4()),
         "amount": 100.00,
@@ -538,7 +538,7 @@ def test_handle_payment_failed_send_to_dlq(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "amount": 100.00,
         "reason": "Insufficient funds",
@@ -563,7 +563,7 @@ def test_handle_stock_reservation_failed_send_to_dlq(order: Order) -> None:
     message = {
         "correlation_id": str(correlation_id),
         "causation_id": str(correlation_id),
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "order_id": str(order.id),
         "product_id": str(uuid.uuid4()),
         "requested_quantity": 10,

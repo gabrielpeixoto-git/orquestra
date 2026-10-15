@@ -50,23 +50,45 @@ app.conf.update(
     },
     task_queues={
         "inventory": {
+            "exchange": "orquestra",
+            "exchange_type": "topic",
+            "routing_key": "order.ordercreated",
             "queue_arguments": {"x-queue-type": "quorum"},
         },
         "payments": {
+            "exchange": "orquestra",
+            "exchange_type": "topic",
+            "routing_key": "inventory.stockreserved",
             "queue_arguments": {"x-queue-type": "quorum"},
         },
         "notifications": {
+            "exchange": "orquestra",
+            "exchange_type": "topic",
+            "routing_key": "payments.*",
             "queue_arguments": {"x-queue-type": "quorum"},
         },
         "audit": {
+            "exchange": "orquestra",
+            "exchange_type": "topic",
+            "routing_key": "#",
             "queue_arguments": {"x-queue-type": "quorum"},
         },
         "orchestrator": {
+            "exchange": "orquestra",
+            "exchange_type": "topic",
+            "routing_key": "payments.*",
+            "queue_arguments": {"x-queue-type": "quorum"},
+        },
+        "orchestrator_inventory": {
+            "exchange": "orquestra",
+            "exchange_type": "topic",
+            "routing_key": "inventory.stockreservationfailed",
             "queue_arguments": {"x-queue-type": "quorum"},
         },
     },
     task_default_queue="default",
     task_default_exchange="orquestra",
+    task_default_exchange_type="topic",
     task_default_routing_key="default",
     task_routes={
         "apps.inventory.tasks.*": {"queue": "inventory"},

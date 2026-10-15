@@ -199,3 +199,13 @@ class GetPaymentByOrderTests(TestCase):
 
         with pytest.raises(PaymentNotFoundError):
             get_payment_by_order(order_id)
+
+
+class PaymentsURLTests(TestCase):
+    """Tests for payments URLs."""
+
+    def test_payments_urls_import(self):
+        """Test payments URLs can be imported."""
+        from apps.payments import urls
+
+        assert urls is not None

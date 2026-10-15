@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db import connections
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,11 +17,13 @@ User = get_user_model()
 logger = structlog.get_logger(__name__)
 
 
+@api_view(["GET"])
 def health_live(_request) -> Response:
     """Liveness probe - always returns 200 if the server is running."""
     return Response({"status": "alive"}, status=status.HTTP_200_OK)
 
 
+@api_view(["GET"])
 def health_ready(_request) -> Response:
     """Readiness probe - checks database connection."""
     try:
@@ -35,6 +38,7 @@ def health_ready(_request) -> Response:
         )
 
 
+@api_view(["GET"])
 def health_detailed(_request) -> Response:
     """Detailed health check for all services."""
     services = {}
