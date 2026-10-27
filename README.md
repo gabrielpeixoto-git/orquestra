@@ -55,17 +55,45 @@ Acesse:
 - **Dashboard**: http://localhost:8000/
 - **Health**: http://localhost:8000/health/detailed
 
-## 📸 Screenshots e Demonstração
+## 📸 Screenshots
 
-Para capturar screenshots do dashboard para o portfólio, consulte o [Guia de Screenshots](docs/SCREENSHOTS.md) com instruções detalhadas.
+### Dashboard Principal
 
-**Sugestão de screenshots para README**:
-1. Visão geral do dashboard com KPIs (Total Orders, Revenue, Success Rate)
-2. Lista de pedidos com filtros e status badges
-3. Timeline de um pedido com sucesso (OrderCreated → StockReserved → PaymentProcessed → OrderConfirmed)
-4. Tabela de dead letters com replay/discard
-5. Grafana dashboard com métricas
-6. Jaeger trace completo da saga
+[![Dashboard Overview](screenshots/dashboard/overview.png)](screenshots/dashboard/overview.png)
+
+Visão geral com KPIs em tempo real (Total Orders, Revenue, Success Rate, Dead Letters).
+
+### Lista de Pedidos
+
+[![Orders List](screenshots/dashboard/orders_list.png)](screenshots/dashboard/orders_list.png)
+
+Tabela de pedidos com filtros funcionais, status badges e auto-refresh via HTMX.
+
+### Timeline da Saga
+
+[![Order Timeline](screenshots/dashboard/order_timeline.png)](screenshots/dashboard/order_timeline.png)
+
+Timeline completa com trace de eventos da saga orquestrada (OrderCreated → StockReserved → PaymentProcessed → OrderConfirmed).
+
+### Dead Letter Queue
+
+[![Dead Letters](screenshots/failure-scenarios/dead_letters.png)](screenshots/failure-scenarios/dead_letters.png)
+
+Interface de replay manual para mensagens falhadas com detalhes de erro.
+
+### Observabilidade
+
+[![Grafana Dashboard](screenshots/observability/grafana_dashboard.png)](screenshots/observability/grafana_dashboard.png)
+
+Dashboards provisionados com métricas de pedidos, pagamentos e estoque.
+
+[![Jaeger Trace](screenshots/observability/jaeger_trace.png)](screenshots/observability/jaeger_trace.png)
+
+Distributed tracing com OpenTelemetry mostrando spans completos da saga.
+
+---
+
+**Mais screenshots**: Veja a pasta [screenshots/](screenshots/) para imagens adicionais e o [Guia de Screenshots](docs/SCREENSHOTS.md) para instruções de captura.
 
 ## 🎤 Como Fazer Demo para Entrevistas
 
