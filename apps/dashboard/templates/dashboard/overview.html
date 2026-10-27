@@ -5,7 +5,7 @@
 {% block content %}
 <!-- KPI Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <!-- Total Orders -->
+    <!-- Total de Pedidos -->
     <div class="card p-6">
         <div class="flex items-center justify-between">
             <div>
@@ -20,41 +20,41 @@
         </div>
     </div>
 
-    <!-- Success Rate -->
+    <!-- Revenue -->
+    <div class="card p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Receita Total</p>
+                <p class="text-3xl font-bold mt-2">R$ {{ revenue }}</p>
+            </div>
+            <div class="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Taxa de Sucesso -->
     <div class="card p-6">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Taxa de Sucesso</p>
                 <p class="text-3xl font-bold mt-2">{{ success_rate }}%</p>
             </div>
-            <div class="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
         </div>
     </div>
 
-    <!-- Failed Orders -->
+    <!-- Mensagens com Falha -->
     <div class="card p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Pedidos Falhados</p>
-                <p class="text-3xl font-bold mt-2">{{ failed_orders }}</p>
-            </div>
-            <div class="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
-                <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                </svg>
-            </div>
-        </div>
-    </div>
-
-    <!-- Dead Letters -->
-    <div class="card p-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Dead Letters</p>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Mensagens com Falha</p>
                 <p class="text-3xl font-bold mt-2">{{ dead_letters }}</p>
             </div>
             <div class="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
@@ -68,7 +68,7 @@
 
 <!-- Charts Row -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <!-- Status Distribution -->
+    <!-- Distribuição de Status -->
     <div class="card p-6">
         <h3 class="text-lg font-semibold mb-4">Distribuição de Status</h3>
         <div class="h-64">
@@ -76,13 +76,21 @@
         </div>
     </div>
 
-    <!-- Orders Count by Status -->
+    <!-- Contagem de Pedidos por Status -->
     <div class="card p-6">
         <h3 class="text-lg font-semibold mb-4">Pedidos por Status</h3>
         <div class="space-y-4">
             {% for item in status_counts %}
             <div class="flex items-center justify-between">
-                <span class="text-sm font-medium">{{ item.status }}</span>
+                <span class="text-sm font-medium">
+                    {% if item.status == 'PENDING' %}Pendente
+                    {% elif item.status == 'STOCK_RESERVED' %}Estoque Reservado
+                    {% elif item.status == 'PAYMENT_SUCCEEDED' %}Pagamento Aprovado
+                    {% elif item.status == 'CONFIRMED' %}Confirmado
+                    {% elif item.status == 'CANCELLED' %}Cancelado
+                    {% else %}{{ item.status }}
+                    {% endif %}
+                </span>
                 <span class="text-sm text-gray-500 dark:text-gray-400">{{ item.count }}</span>
             </div>
             {% empty %}
@@ -101,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(statusCtx, {
         type: 'doughnut',
         data: {
-            labels: [{% for item in status_counts %}'{{ item.status }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+            labels: [{% for item in status_counts %}{% if item.status == 'PENDING' %}'Pendente'{% elif item.status == 'STOCK_RESERVED' %}'Estoque Reservado'{% elif item.status == 'PAYMENT_SUCCEEDED' %}'Pagamento Aprovado'{% elif item.status == 'CONFIRMED' %}'Confirmado'{% elif item.status == 'CANCELLED' %}'Cancelado'{% else %}'{{ item.status }}'{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
             datasets: [{
                 data: [{% for item in status_counts %}{{ item.count }}{% if not forloop.last %},{% endif %}{% endfor %}],
                 backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6b7280', '#3b82f6']

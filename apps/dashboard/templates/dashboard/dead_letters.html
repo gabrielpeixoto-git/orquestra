@@ -6,9 +6,9 @@
 <div class="card p-6">
     <div class="flex items-center justify-between mb-4">
         <div class="flex items-center space-x-3">
-            <h3 class="text-lg font-semibold">Dead Letters ({{ dead_letters|length }})</h3>
+            <h3 class="text-lg font-semibold">Mensagens com Falha ({{ dead_letters|length }})</h3>
             <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
-                Real-time
+                Tempo Real
             </span>
         </div>
         <p class="text-gray-500 dark:text-gray-400">Mensagens que falharam após esgotar retry.</p>
@@ -19,9 +19,9 @@
             <thead class="table-header">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Queue</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Type</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Error</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Fila</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Tipo</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Erro</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Criado em</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Ações</th>
                 </tr>
@@ -41,7 +41,7 @@
 {% block extra_js %}
 <script>
 async function replayDeadLetter(id) {
-    if (!confirm('Replay esta mensagem?')) return;
+    if (!confirm('Reprocessar esta mensagem?')) return;
 
     try {
         const response = await fetch(`{% url 'dashboard:replay_dead_letter' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', id), {
@@ -52,13 +52,13 @@ async function replayDeadLetter(id) {
         });
         const data = await response.json();
         if (data.success) {
-            alert('Dead letter replayed com sucesso');
+            alert('Mensagem reprocessada com sucesso');
             location.reload();
         } else {
             alert('Erro: ' + data.error);
         }
     } catch (e) {
-        alert('Erro ao replay: ' + e.message);
+        alert('Erro ao reprocessar: ' + e.message);
     }
 }
 
@@ -74,7 +74,7 @@ async function discardDeadLetter(id) {
         });
         const data = await response.json();
         if (data.success) {
-            alert('Dead letter descartada com sucesso');
+            alert('Mensagem descartada com sucesso');
             location.reload();
         } else {
             alert('Erro: ' + data.error);

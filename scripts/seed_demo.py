@@ -67,6 +67,7 @@ def main() -> None:
     orders_data = [
         {
             "customer_id": uuid.uuid4(),
+            "customer_name": "Maria Silva",
             "items": [
                 {
                     "product_id": products[0].id,
@@ -77,6 +78,7 @@ def main() -> None:
         },
         {
             "customer_id": uuid.uuid4(),
+            "customer_name": "João Santos",
             "items": [
                 {
                     "product_id": products[1].id,
@@ -96,6 +98,7 @@ def main() -> None:
         order = Order.objects.create(
             id=uuid.uuid4(),
             customer_id=order_data["customer_id"],
+            customer_name=order_data["customer_name"],
             total_amount=Decimal("0.00"),
             status=Order.Status.PENDING,
         )

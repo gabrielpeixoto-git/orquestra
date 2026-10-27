@@ -1,11 +1,9 @@
 # Orquestra
 
-[![CI](https://github.com/gabri/orquestra/workflows/CI/badge.svg)](https://github.com/gabri/orquestra/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/gabri/orquestra/branch/main/graph/badge.svg)](https://codecov.io/gh/gabri/orquestra)
 [![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Django](https://img.shields.io/badge/django-6.1+-green.svg)](https://www.djangoproject.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Coverage: 80%+](https://img.shields.io/badge/coverage-80%25+-brightgreen.svg)](https://github.com/gabri/orquestra)
+[![Coverage: 90%+](https://img.shields.io/badge/coverage-90%25+-brightgreen.svg)](https://github.com/gabri/orquestra)
 
 ## Resumo
 
@@ -59,32 +57,15 @@ Acesse:
 
 ## 📸 Screenshots e Demonstração
 
-Para capturar screenshots do dashboard para o portfólio:
-
-```bash
-# 1. Subir ambiente completo
-uv run poe demo
-
-# 2. Acessar páginas e capturar screenshots:
-# - Visão Geral: http://localhost:8000/ (KPIs, charts)
-# - Pedidos: http://localhost:8000/orders/ (tabela com dados)
-# - Detalhe do Pedido: http://localhost:8000/orders/<uuid>/ (timeline)
-# - Falhas/DLQ: http://localhost:8000/dead-letters/ (replay interface)
-# - Laboratório: http://localhost:8000/laboratory/ (injeção de falhas)
-# - Saúde: http://localhost:8000/health/ (monitoramento)
-
-# 3. Para GIF animado do fluxo da saga:
-# - Usar ferramenta como LICEcap, ScreenToGif ou OBS
-# - Gravar: criar pedido → assistir timeline → CONFIRMED
-# - Alternar para laboratório → injetar falha → assistir compensação
-```
+Para capturar screenshots do dashboard para o portfólio, consulte o [Guia de Screenshots](docs/SCREENSHOTS.md) com instruções detalhadas.
 
 **Sugestão de screenshots para README**:
-1. Visão geral do dashboard com KPIs
-2. Timeline de um pedido com sucesso
-3. Tabela de dead letters com replay
-4. Grafana dashboard com métricas
-5. Jaeger trace completo da saga
+1. Visão geral do dashboard com KPIs (Total Orders, Revenue, Success Rate)
+2. Lista de pedidos com filtros e status badges
+3. Timeline de um pedido com sucesso (OrderCreated → StockReserved → PaymentProcessed → OrderConfirmed)
+4. Tabela de dead letters com replay/discard
+5. Grafana dashboard com métricas
+6. Jaeger trace completo da saga
 
 ## 🎤 Como Fazer Demo para Entrevistas
 
@@ -151,9 +132,11 @@ curl -X POST http://localhost:8000/api/v1/orders/ \
 1. **Concorrência**: "Testei com 50 threads simultâneas - zero overselling"
 2. **Resiliência**: "Gateway timeout → watchdog compensa automaticamente"
 3. **Debugging**: "Trace completo no Jaeger em 3 cliques"
-4. **Qualidade**: "80% cobertura, mypy strict, CI verde sempre"
+4. **Qualidade**: "90% cobertura, 235 testes, mypy strict, CI verde sempre"
 
 ## Consumidores RabbitMQ Alternativos
+
+⚠️ **Nota Importante**: Este é um workaround temporário para um problema de routing key entre Celery e RabbitMQ. Para produção, recomenda-se investigar e corrigir a configuração do Celery. Veja [Troubleshooting](docs/TROUBLESHOOTING.md#0-celery-workers-não-funcionando) para mais detalhes.
 
 Se o Celery tiver problemas de routing key ou configuração, use os consumidores alternativos que chamam handlers diretamente:
 
@@ -172,7 +155,12 @@ uv run python scripts/consumer.py orchestrator
 uv run python scripts/consumer.py audit
 ```
 
-**Nota**: Este é um workaround temporário. Para produção, investigue e corrija a configuração do Celery. Veja [Troubleshooting](docs/TROUBLESHOOTING.md) para mais detalhes.
+**Como funciona**:
+- Mapeia filas RabbitMQ para handlers Celery por tipo de mensagem
+- Chama handlers diretamente (bypass do routing key do Celery)
+- Suporta múltiplos handlers por mensagem (fan-out)
+- Usa idempotência via InboxMessage
+- Fix encoding no Windows (UTF-8)
 
 ## Kubernetes Deployment
 
@@ -203,9 +191,10 @@ See [docs/KUBERNETES.md](docs/KUBERNETES.md) for detailed deployment guide.
 - **Dead Letter Queue** - Isolamento de mensagens falhadas com replay manual
 - **Circuit Breaker** - Timeout no watchdog para evitar sagas travadas
 - **Hexagonal Architecture** - Separação entre ports (interfaces) e adapters (implementações)
+- **Server-Sent Events (SSE)** - Real-time updates sem polling
 
 ### Stack Moderna e Production-Ready
-- **Python 3.13** com type hints em todas as funções (mypy strict)
+- **Python 3.14** com type hints em todas as funções (mypy strict)
 - **Django 6.1** com DRF, OpenAPI 3.0, JWT authentication
 - **RabbitMQ 4.x** com quorum queues (alta disponibilidade)
 - **PostgreSQL 18** com otimizações de performance
@@ -214,12 +203,20 @@ See [docs/KUBERNETES.md](docs/KUBERNETES.md) for detailed deployment guide.
 - **Observabilidade completa** - Logs JSON (structlog), Prometheus, Grafana, Jaeger
 
 ### Qualidade de Código
-- **Cobertura de testes**: 80%+ (51 testes unitários + integração)
+- **Cobertura de testes**: 90%+ (235 testes unitários + integração)
 - **Type safety**: mypy strict mode com Django/DRF stubs
 - **Linting**: ruff com 50+ regras ativas
 - **CI/CD**: GitHub Actions com lint, types, testes, security audit, Docker build
 - **Pre-commit hooks**: ruff format, ruff check, mypy, pip-audit
 - **Import-linter**: Garante isolamento entre bounded contexts
+
+## 🏆 Próximos Passos Sugeridos
+
+- Investigar e corrigir problemas de routing key do Celery para remover workaround de consumidores alternativos
+- Adicionar mais testes de carga e stress testing
+- Implementar feature flags para canary deployments
+- Adicionar mais métricas de negócio customizadas no Grafana
+- Explorar migração para microservices usando bounded contexts existentes
 
 ## 🏆 Desafios Técnicos Superados
 
@@ -297,6 +294,7 @@ See [docs/KUBERNETES.md](docs/KUBERNETES.md) for detailed deployment guide.
 - [Arquitetura](docs/ARCHITECTURE.md) - Visão geral da arquitetura e padrões
 - [Roadmap](docs/ROADMAP.md) - Fases do projeto e progresso
 - [Runbook](docs/RUNBOOK.md) - Guia de operação e troubleshooting básico
+- [Contribuindo](CONTRIBUTING.md) - Guia para contribuidores
 
 ### Operação em Produção
 - [Troubleshooting Avançado](docs/TROUBLESHOOTING.md) - Diagnóstico de problemas complexos
@@ -309,6 +307,7 @@ See [docs/KUBERNETES.md](docs/KUBERNETES.md) for detailed deployment guide.
 
 ### Design
 - [Design System](docs/DESIGN.md) - Tokens e componentes do dashboard
+- [Screenshots Guide](docs/SCREENSHOTS.md) - Guia para capturar screenshots para portfólio
 
 ### ADRs
 - [ADRs](docs/adr/) - Architecture Decision Records

@@ -155,6 +155,7 @@ class OrderDetailAPITests(TestCase):
         self.order = Order.objects.create(
             id=uuid.uuid4(),
             customer_id=uuid.uuid4(),
+            customer_name="Test Customer",
             total_amount=Decimal("100.00"),
             status=Order.Status.PENDING,
         )

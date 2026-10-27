@@ -8,7 +8,7 @@
         <div class="flex items-center space-x-3">
             <h3 class="text-lg font-semibold">Lista de Pedidos ({{ orders|length }})</h3>
             <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
-                Real-time
+                Tempo Real
             </span>
         </div>
         <div class="flex items-center space-x-4">
@@ -21,11 +21,11 @@
                 <select name="status"
                         class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800">
                     <option value="">Todos os Status</option>
-                    <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>PENDING</option>
-                    <option value="STOCK_RESERVED" {% if status_filter == 'STOCK_RESERVED' %}selected{% endif %}>STOCK_RESERVED</option>
-                    <option value="PAYMENT_SUCCEEDED" {% if status_filter == 'PAYMENT_SUCCEEDED' %}selected{% endif %}>PAYMENT_SUCCEEDED</option>
-                    <option value="CONFIRMED" {% if status_filter == 'CONFIRMED' %}selected{% endif %}>CONFIRMED</option>
-                    <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>CANCELLED</option>
+                    <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pendente</option>
+                    <option value="STOCK_RESERVED" {% if status_filter == 'STOCK_RESERVED' %}selected{% endif %}>Estoque Reservado</option>
+                    <option value="PAYMENT_SUCCEEDED" {% if status_filter == 'PAYMENT_SUCCEEDED' %}selected{% endif %}>Pagamento Aprovado</option>
+                    <option value="CONFIRMED" {% if status_filter == 'CONFIRMED' %}selected{% endif %}>Confirmado</option>
+                    <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Cancelado</option>
                 </select>
                 <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
                     Filtrar

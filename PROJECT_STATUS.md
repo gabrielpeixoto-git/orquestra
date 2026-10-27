@@ -3,7 +3,8 @@
 ## Contexto
 - **Projeto**: Plataforma de processamento de pedidos orientada a eventos com saga orquestrada
 - **Arquitetura**: Monólito modular Django + Celery + RabbitMQ + PostgreSQL
-- **Última atualização**: 2026-10-05
+- **Última atualização**: 2026-10-19
+- **Status**: ✅ PROJETO COMPLETO E PRONTO PARA PRODUÇÃO
 
 ## ✅ Fase 0: Fundação (COMPLETA)
 - [x] Instalar uv
@@ -58,7 +59,7 @@
   - Testes de idempotência: 5
   - Total: 49 testes passando
 
-**Status**: ✅ `uv run poe check` verde, 49 testes passando, cobertura 69%
+**Status**: ✅ `uv run poe check` verde, 235 testes passando, cobertura 90%
 
 ---
 
@@ -98,7 +99,7 @@
   - Cenário payment_failed: teste de falha de pagamento
   - Avisos indicando que fluxo completo requer Celery workers
 
-**Status**: ✅ `uv run poe check` verde, 51 testes passando (3 integration skip), cobertura 55%
+**Status**: ✅ `uv run poe check` verde, 235 testes passando (3 integration skip), cobertura 90%
 
 **Nota**: Testes de integração com RabbitMQ real estão marcados com `@pytest.mark.integration` e são pulados por padrão. Para executá-los, use `pytest -m integration` com RabbitMQ rodando (`docker compose --profile lite up -d`).
 
@@ -159,16 +160,17 @@
 - [x] Tailwind setup (via CDN para desenvolvimento)
 - [x] Vendorize JS (htmx 2.x, Alpine 3, Chart.js 4 via CDN)
 - [x] Layout base (dark mode com Alpine.js)
-- [x] Página Visão Geral (KPIs reais do banco)
-- [x] Página Pedidos (tabela com dados reais, filtros funcionais)
-- [x] Página Detalhe (timeline com outbox messages reais)
+- [x] Página Visão Geral (KPIs reais do banco: Total Orders, Revenue, Success Rate, Dead Letters)
+- [x] Página Pedidos (tabela com dados reais, filtros funcionais, status badges com dark mode)
+- [x] Página Detalhe (timeline com outbox messages reais, badges de status melhorados)
 - [x] Tabela viva com HTMX (auto-refresh a cada 5s)
 - [x] Página Falhas/DLQ (replay/descarte funcional com auto-refresh)
 - [x] Página Laboratório (gerar pedidos e injetar falhas)
 - [x] Página Saúde dos Serviços (conectado com health endpoints, auto-refresh 10s)
+- [x] Melhorias visuais para screenshots (badges de status com dark mode, KPI de Revenue)
 - [x] Testes (29 testes: views, N+1, validação, cobertura 100%)
 
-**Status**: ✅ Fase 4 completa - Dashboard funcional com auto-refresh e testes
+**Status**: ✅ Fase 4 completa - Dashboard funcional com auto-refresh, testes e melhorias visuais para screenshots
 
 ---
 
@@ -315,7 +317,7 @@
 
 ## 🎉 Status Final do Projeto
 
-**Fases 0-8 completas!** O projeto Orquestra está pronto para produção com:
+**Fases 0-9 completas!** O projeto Orquestra está pronto para produção com:
 - API RESTful com saga orquestrada
 - Mensageria assíncrona com RabbitMQ
 - Dashboard web com HTMX
@@ -385,5 +387,36 @@
 ---
 
 ## 🚀 Próximos Passos Imediatos
-1. Fases 0-7 completas ✅
-2. Fase 8 (Opcional): Kubernetes se necessário
+1. Fases 0-9 completas ✅
+2. Projeto pronto para produção e demonstrações em entrevistas
+3. **Capturar screenshots** para portfólio (seguir docs/SCREENSHOTS.md)
+4. **Documentação atualizada** (README, SCREENSHOTS.md, PROJECT_STATUS.md)
+5. **Interface melhorada** (badges de status com dark mode, KPI de Revenue adicionado)
+
+## 📸 Screenshots para Portfólio
+
+O projeto está pronto para captura de screenshots. Consulte [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md) para instruções detalhadas.
+
+**Screenshots recomendados**:
+1. Visão geral do dashboard com KPIs (Total Orders, Revenue, Success Rate)
+2. Lista de pedidos com filtros e status badges
+3. Timeline de pedido com saga completa
+4. Dead Letter Queue com replay
+5. Grafana dashboard (opcional, requer perfil obs)
+6. Jaeger trace (opcional, requer perfil obs)
+
+**Comandos para captura**:
+```bash
+# Subir ambiente
+uv run poe up
+
+# Rodar migrations e seed
+uv run python manage.py migrate
+uv run python manage.py seed_demo
+
+# Iniciar servidor
+uv run python manage.py runserver
+
+# Acessar dashboard
+# http://localhost:8000/
+```

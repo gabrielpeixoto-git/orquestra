@@ -29,6 +29,10 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Copy application code
 COPY --chown=appuser:appuser . .
 
+# Copy entrypoint script
+COPY --chown=appuser:appuser docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
@@ -42,5 +46,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python manage.py check_health || exit 1
 
-# Run gunicorn
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
+# Run gunicorn via entrypoint
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120", "--worker-class", "sync", "--threads", "4"]

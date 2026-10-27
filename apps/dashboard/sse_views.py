@@ -6,6 +6,7 @@ import queue
 import threading
 from typing import Any
 
+from django.contrib.auth.decorators import login_required
 from django.http import StreamingHttpResponse
 from django.utils import timezone
 
@@ -56,6 +57,7 @@ class SSEClient:
                     client_queue.put_nowait(message)
 
 
+@login_required
 def sse_orders(request):
     """SSE endpoint for real-time order updates.
 

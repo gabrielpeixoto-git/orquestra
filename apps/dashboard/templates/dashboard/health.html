@@ -3,40 +3,87 @@
 {% block page_title %}Saúde dos Serviços{% endblock %}
 
 {% block content %}
-<div class="mb-4 flex items-center justify-between">
-    <div class="flex items-center space-x-3">
-        <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
-            Real-time
+<div class="mb-6 flex items-center space-x-3">
+    <div class="flex items-center space-x-2">
+        <span class="relative flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
         </span>
+        <span class="text-sm font-medium text-gray-600 dark:text-gray-300">Monitoramento em Tempo Real</span>
     </div>
-    <button onclick="location.reload()" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
-        Atualizar Agora
-    </button>
+    <span id="last-update" class="text-xs text-gray-500 dark:text-gray-400"></span>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-     id="health-content"
-     hx-get="{% url 'dashboard:health' %}"
-     hx-trigger="load"
-     hx-swap="innerHTML">
+{% if health_data %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% include "dashboard/health_content.html" %}
 </div>
+{% else %}
+<div class="card p-6">
+    <div class="flex items-center justify-center py-8">
+        <div class="text-center">
+            <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <p class="text-gray-500 dark:text-gray-400">Não foi possível obter dados de saúde dos serviços.</p>
+            <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Verifique se a API está em execução.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <div class="mt-8 card p-6">
-    <h3 class="text-lg font-semibold mb-4">Links de Observabilidade</h3>
+    <h3 class="text-lg font-semibold mb-4 flex items-center">
+        <svg class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        Links de Observabilidade
+    </h3>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <a href="http://localhost:16686" target="_blank" class="block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-            <h4 class="font-medium text-primary-600 dark:text-primary-400">Jaeger</h4>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Distributed Tracing</p>
+        <a href="http://localhost:16686" target="_blank" class="group block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-primary-300 dark:hover:border-primary-600">
+            <div class="flex items-center mb-2">
+                <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mr-3">
+                    <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <h4 class="font-medium text-primary-600 dark:text-primary-400 group-hover:underline">Jaeger</h4>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Rastreamento Distribuído</p>
         </a>
-        <a href="http://localhost:9090" target="_blank" class="block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-            <h4 class="font-medium text-primary-600 dark:text-primary-400">Prometheus</h4>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Metrics Collection</p>
+        <a href="http://localhost:9090" target="_blank" class="group block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-primary-300 dark:hover:border-primary-600">
+            <div class="flex items-center mb-2">
+                <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mr-3">
+                    <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h4 class="font-medium text-primary-600 dark:text-primary-400 group-hover:underline">Prometheus</h4>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Coleta de Métricas</p>
         </a>
-        <a href="http://localhost:3000" target="_blank" class="block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-            <h4 class="font-medium text-primary-600 dark:text-primary-400">Grafana</h4>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Dashboards (admin/admin)</p>
+        <a href="http://localhost:3000" target="_blank" class="group block p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-primary-300 dark:hover:border-primary-600">
+            <div class="flex items-center mb-2">
+                <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mr-3">
+                    <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                    </svg>
+                </div>
+                <h4 class="font-medium text-primary-600 dark:text-primary-400 group-hover:underline">Grafana</h4>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Painéis (admin/admin)</p>
         </a>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function updateTimestamp() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('last-update').textContent = `Atualizado às ${timeStr}`;
+        }
+        updateTimestamp();
+    });
+</script>
 {% endblock %}

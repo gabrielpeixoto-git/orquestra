@@ -48,6 +48,7 @@ class TestDashboardViews:
         order = Order.objects.create(
             id=uuid.uuid4(),
             customer_id=uuid.uuid4(),
+            customer_name="Test Customer",
             total_amount=100.00,
             status=Order.Status.PENDING,
         )
@@ -173,7 +174,7 @@ class TestDashboardViews:
             {"failure_type": "payment_timeout"},
         )
         assert response.status_code == 200
-        assert b"Payment timeout injected" in response.content
+        assert b"Timeout de pagamento injetado" in response.content
 
     def test_inject_failure_stock_error(self):
         """Test inject failure for stock error."""
@@ -182,7 +183,7 @@ class TestDashboardViews:
             {"failure_type": "stock_error"},
         )
         assert response.status_code == 200
-        assert b"Stock error injected" in response.content
+        assert b"Erro de estoque injetado" in response.content
 
     def test_inject_failure_invalid_type(self):
         """Test inject failure with invalid type."""
@@ -210,6 +211,7 @@ class TestDashboardViews:
         Order.objects.create(
             id=uuid.uuid4(),
             customer_id=uuid.uuid4(),
+            customer_name="Test Customer",
             total_amount=100.00,
             status=Order.Status.PENDING,
         )

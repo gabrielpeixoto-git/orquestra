@@ -17,9 +17,7 @@ class ListOutboxMessagesTests:
     def test_list_outbox_messages_success(self) -> None:
         """Test listing outbox messages as staff."""
         client = APIClient()
-        staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
+        staff_user = User.objects.create_user(username="staff", is_staff=True, is_superuser=True)
         client.force_authenticate(user=staff_user)
 
         OutboxMessage.objects.create(
@@ -55,9 +53,7 @@ class ListDeadLettersTests:
     def test_list_dead_letters_success(self) -> None:
         """Test listing dead letter messages as staff."""
         client = APIClient()
-        staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
+        staff_user = User.objects.create_user(username="staff", is_staff=True, is_superuser=True)
         client.force_authenticate(user=staff_user)
 
         DeadLetterMessage.objects.create(
@@ -79,9 +75,7 @@ class ListDeadLettersTests:
     def test_list_dead_letters_filtered_by_queue(self) -> None:
         """Test listing dead letters filtered by queue."""
         client = APIClient()
-        staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
+        staff_user = User.objects.create_user(username="staff", is_staff=True, is_superuser=True)
         client.force_authenticate(user=staff_user)
 
         DeadLetterMessage.objects.create(
@@ -128,9 +122,7 @@ class ReplayDeadLetterTests:
         from unittest.mock import patch
 
         client = APIClient()
-        staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
+        staff_user = User.objects.create_user(username="staff", is_staff=True, is_superuser=True)
         client.force_authenticate(user=staff_user)
 
         dead_letter = DeadLetterMessage.objects.create(
@@ -156,9 +148,7 @@ class ReplayDeadLetterTests:
     def test_replay_dead_letter_not_found(self) -> None:
         """Test replaying a non-existent dead letter."""
         client = APIClient()
-        staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
+        staff_user = User.objects.create_user(username="staff", is_staff=True, is_superuser=True)
         client.force_authenticate(user=staff_user)
 
         response = client.post(
@@ -173,9 +163,7 @@ class ReplayDeadLetterTests:
     def test_replay_dead_letter_invalid_status(self) -> None:
         """Test replaying a dead letter that is not pending."""
         client = APIClient()
-        staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
+        staff_user = User.objects.create_user(username="staff", is_staff=True, is_superuser=True)
         client.force_authenticate(user=staff_user)
 
         dead_letter = DeadLetterMessage.objects.create(
@@ -218,9 +206,7 @@ class DiscardDeadLetterTests:
     def test_discard_dead_letter_success(self) -> None:
         """Test discarding a dead letter message as staff."""
         client = APIClient()
-        staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
+        staff_user = User.objects.create_user(username="staff", is_staff=True, is_superuser=True)
         client.force_authenticate(user=staff_user)
 
         dead_letter = DeadLetterMessage.objects.create(
@@ -248,9 +234,7 @@ class DiscardDeadLetterTests:
     def test_discard_dead_letter_not_found(self) -> None:
         """Test discarding a non-existent dead letter."""
         client = APIClient()
-        staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
+        staff_user = User.objects.create_user(username="staff", is_staff=True, is_superuser=True)
         client.force_authenticate(user=staff_user)
 
         response = client.post(
@@ -265,9 +249,7 @@ class DiscardDeadLetterTests:
     def test_discard_dead_letter_invalid_status(self) -> None:
         """Test discarding a dead letter that is not pending."""
         client = APIClient()
-        staff_user = User.objects.create_user(
-            username="staff", is_staff=True, is_superuser=True
-        )
+        staff_user = User.objects.create_user(username="staff", is_staff=True, is_superuser=True)
         client.force_authenticate(user=staff_user)
 
         dead_letter = DeadLetterMessage.objects.create(

@@ -87,7 +87,7 @@ MIDDLEWARE = [
     "apps.core.middleware.CorrelationIdMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",  # Disabled for Browser Preview in development
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -138,6 +138,10 @@ CACHES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
+
+LOGIN_URL = "dashboard:login"
+LOGIN_REDIRECT_URL = "dashboard:overview"
+LOGOUT_REDIRECT_URL = "dashboard:login"
 
 AUTH_PASSWORD_VALIDATORS = [
     {

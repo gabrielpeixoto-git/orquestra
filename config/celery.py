@@ -32,7 +32,7 @@ app.conf.update(
     task_track_started=True,
     task_time_limit=30 * 60,
     task_soft_time_limit=25 * 60,
-    broker_url="amqp://guest:guest@localhost:5672/%2F",
+    broker_url="redis://localhost:6379/1",
     result_backend="redis://localhost:6379/0",
     task_acks_late=True,
     worker_prefetch_multiplier=1,

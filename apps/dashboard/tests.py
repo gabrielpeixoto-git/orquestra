@@ -52,6 +52,7 @@ class TestDashboardViews:
         order = Order.objects.create(
             id=uuid.uuid4(),
             customer_id=uuid.uuid4(),
+            customer_name="Test Customer",
             total_amount=100.00,
             status=Order.Status.PENDING,
         )
@@ -275,6 +276,7 @@ class TestNPlusOneQueries:
             order = Order.objects.create(
                 id=uuid.uuid4(),
                 customer_id=uuid.uuid4(),
+                customer_name="Test Customer",
                 total_amount=100.00,
                 status=Order.Status.PENDING,
             )
@@ -299,6 +301,7 @@ class TestNPlusOneQueries:
         order = Order.objects.create(
             id=uuid.uuid4(),
             customer_id=uuid.uuid4(),
+            customer_name="Test Customer",
             total_amount=100.00,
             status=Order.Status.PENDING,
         )
@@ -348,6 +351,7 @@ class TestNPlusOneQueries:
             Order.objects.create(
                 id=uuid.uuid4(),
                 customer_id=uuid.uuid4(),
+                customer_name="Test Customer",
                 total_amount=100.00,
                 status=Order.Status.PENDING,
             )

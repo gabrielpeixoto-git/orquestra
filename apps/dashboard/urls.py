@@ -7,6 +7,8 @@ from apps.dashboard import sse_views, views
 app_name = "dashboard"
 
 urlpatterns = [
+    path("login/", views.dashboard_login, name="login"),
+    path("logout/", views.dashboard_logout, name="logout"),
     path("", views.overview, name="overview"),
     path("orders/", views.orders, name="orders"),
     path("orders/<uuid:order_id>/", views.order_detail, name="order_detail"),

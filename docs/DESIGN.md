@@ -46,10 +46,12 @@ Design system para o dashboard web do Orquestra, focado em observabilidade e con
 
 ```css
 /* Order Status */
---status-pending: #f59e0b;    /* amber-500 */
---status-confirmed: #10b981;  /* emerald-500 */
---status-cancelled: #ef4444;  /* red-500 */
---status-failed: #ef4444;     /* red-500 */
+--status-pending: #f59e0b;           /* amber-500 */
+--status-stock-reserved: #3b82f6;    /* blue-500 */
+--status-payment-succeeded: #10b981; /* emerald-500 */
+--status-confirmed: #10b981;        /* emerald-500 */
+--status-cancelled: #ef4444;        /* red-500 */
+--status-failed: #ef4444;           /* red-500 */
 
 /* Stock Reservation */
 --reservation-active: #3b82f6; /* blue-500 */
@@ -61,6 +63,11 @@ Design system para o dashboard web do Orquestra, focado em observabilidade e con
 --payment-failed: #ef4444;    /* red-500 */
 --payment-pending: #f59e0b;    /* amber-500 */
 ```
+
+**Badges com Dark Mode**:
+- Todos os badges de status têm variantes para dark mode
+- Classes CSS: `.badge-pending`, `.badge-stock-reserved`, `.badge-payment-succeeded`, `.badge-confirmed`, `.badge-cancelled`, `.badge-failed`
+- Implementado em `apps/dashboard/static/dashboard/css/styles.css`
 
 ### Semantic Colors
 

@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Orquestra Control Center{% endblock %}</title>
+    <title>{% block title %}Orquestra Centro de Controle{% endblock %}</title>
 
-    <!-- Tailwind CSS (CDN for development) -->
+    <!-- Tailwind CSS (CDN para desenvolvimento) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -48,11 +48,20 @@
     <script src="{% static 'dashboard/js/app.js' %}" defer></script>
     <script src="{% static 'dashboard/js/sse.js' %}" defer></script>
 
+    <!-- Aplicar tema imediatamente para evitar flash -->
+    <script>
+        (function() {
+            const isDark = localStorage.getItem('theme') === 'dark' ||
+                           (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen"
-      x-data="themeToggle"
-      x-init="init()">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
     <div class="flex h-screen">
         <!-- Sidebar -->
         <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
@@ -61,13 +70,13 @@
                 <h1 class="text-xl font-bold text-primary-600 dark:text-primary-400">
                     Orquestra
                 </h1>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Control Center</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Centro de Controle</p>
             </div>
 
             <!-- Navigation -->
             <nav class="flex-1 p-4 space-y-2">
                 <a href="{% url 'dashboard:overview' %}"
-                   class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
+                   class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700
                           {% if request.resolver_match.url_name == 'overview' %}bg-gray-100 dark:bg-gray-700 text-primary-600 dark:text-primary-400{% endif %}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
@@ -76,7 +85,7 @@
                 </a>
 
                 <a href="{% url 'dashboard:orders' %}"
-                   class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
+                   class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700
                           {% if request.resolver_match.url_name == 'orders' %}bg-gray-100 dark:bg-gray-700 text-primary-600 dark:text-primary-400{% endif %}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
@@ -85,7 +94,7 @@
                 </a>
 
                 <a href="{% url 'dashboard:dead_letters' %}"
-                   class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
+                   class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700
                           {% if request.resolver_match.url_name == 'dead_letters' %}bg-gray-100 dark:bg-gray-700 text-primary-600 dark:text-primary-400{% endif %}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
@@ -94,7 +103,7 @@
                 </a>
 
                 <a href="{% url 'dashboard:laboratory' %}"
-                   class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
+                   class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700
                           {% if request.resolver_match.url_name == 'laboratory' %}bg-gray-100 dark:bg-gray-700 text-primary-600 dark:text-primary-400{% endif %}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
@@ -103,7 +112,7 @@
                 </a>
 
                 <a href="{% url 'dashboard:health' %}"
-                   class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
+                   class="flex items-center px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700
                           {% if request.resolver_match.url_name == 'health' %}bg-gray-100 dark:bg-gray-700 text-primary-600 dark:text-primary-400{% endif %}">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -112,10 +121,10 @@
                 </a>
             </nav>
 
-            <!-- Theme Toggle -->
+            <!-- Alternar Tema -->
             <div class="p-4 border-t border-gray-200 dark:border-gray-700">
                 <button id="theme-toggle"
-                        class="flex items-center w-full px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        class="flex items-center w-full px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                     <span id="theme-icon" class="w-5 h-5 mr-3 flex items-center justify-center">🌙</span>
                     <span id="theme-text">Modo Escuro</span>
                 </button>
@@ -129,14 +138,20 @@
                 <div class="flex items-center justify-between">
                     <h2 class="text-2xl font-semibold">{% block page_title %}{% endblock %}</h2>
                     <div class="flex items-center space-x-4">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">
-                            Ambiente: <span class="font-medium text-green-600 dark:text-green-400">Production</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">
+                            {{ user.username }}
                         </span>
+                        <a
+                            href="{% url 'dashboard:logout' %}"
+                            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition duration-200"
+                        >
+                            Sair
+                        </a>
                     </div>
                 </div>
             </header>
 
-            <!-- Page Content -->
+            <!-- Conteúdo da Página -->
             <div class="p-6">
                 {% block content %}{% endblock %}
             </div>

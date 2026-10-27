@@ -86,7 +86,7 @@ Este projeto evidencia experiência em:
 
 | Métrica | Valor | Status |
 |---------|-------|--------|
-| Cobertura de testes | 80%+ | ✅ Verde |
+| Cobertura de testes | 90%+ (235 testes) | ✅ Verde |
 | Type safety | mypy strict | ✅ 0 erros |
 | Linting | ruff 50+ regras | ✅ 0 violações |
 | CI/CD | GitHub Actions | ✅ Passando |
