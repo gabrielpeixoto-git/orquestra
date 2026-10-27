@@ -57,43 +57,13 @@ Acesse:
 
 ## 📸 Screenshots
 
-### Dashboard Principal
+Tela login: <img width="1902" height="909" alt="Captura de tela 2026-10-27 150445" src="https://github.com/user-attachments/assets/696ac82c-de8a-4bd9-be24-a9ec8f1ec2d4" />
+Visão Geral: <img width="1906" height="907" alt="Captura de tela 2026-10-27 150458" src="https://github.com/user-attachments/assets/49478dd4-ff16-489f-8d00-9fca16e01006" />
+Pedidos: <img width="1889" height="909" alt="Captura de tela 2026-10-27 150515" src="https://github.com/user-attachments/assets/af50b968-128a-40d6-bc0b-f309eedb2554" />
+Falhas/DLQ: <img width="1890" height="907" alt="Captura de tela 2026-10-27 150607" src="https://github.com/user-attachments/assets/28bf87ef-e6cd-41aa-a1c6-f991ec38776f" />
+Laboratorio: <img width="1902" height="907" alt="Captura de tela 2026-10-27 150614" src="https://github.com/user-attachments/assets/116279da-5443-48a9-82c0-510ffd7d7ef3" />
+Saúde: <img width="1907" height="908" alt="Captura de tela 2026-10-27 150622" src="https://github.com/user-attachments/assets/c3a651da-0f77-4f0d-94da-2e812e923e3b" />
 
-[![Dashboard Overview](overview.png)](overview.png)
-
-Visão geral com KPIs em tempo real (Total Orders, Revenue, Success Rate, Dead Letters).
-
-### Lista de Pedidos
-
-[![Orders List](orders_list.png)](orders_list.png)
-
-Tabela de pedidos com filtros funcionais, status badges e auto-refresh via HTMX.
-
-### Timeline da Saga
-
-[![Order Timeline](order_timeline.png)](order_timeline.png)
-
-Timeline completa com trace de eventos da saga orquestrada (OrderCreated → StockReserved → PaymentProcessed → OrderConfirmed).
-
-### Dead Letter Queue
-
-[![Dead Letters](dead_letters.png)](dead_letters.png)
-
-Interface de replay manual para mensagens falhadas com detalhes de erro.
-
-### Observabilidade
-
-[![Grafana Dashboard](grafana_dashboard.png)](grafana_dashboard.png)
-
-Dashboards provisionados com métricas de pedidos, pagamentos e estoque.
-
-[![Jaeger Trace](jaeger_trace.png)](jaeger_trace.png)
-
-Distributed tracing com OpenTelemetry mostrando spans completos da saga.
-
----
-
-**Guia de captura**: Consulte [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md) para instruções detalhadas de como capturar screenshots.
 
 ## 🎤 Como Fazer Demo para Entrevistas
 
