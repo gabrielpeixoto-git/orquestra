@@ -59,41 +59,41 @@ Acesse:
 
 ### Dashboard Principal
 
-[![Dashboard Overview](screenshots/dashboard/overview.png)](screenshots/dashboard/overview.png)
+[![Dashboard Overview](overview.png)](overview.png)
 
 Visão geral com KPIs em tempo real (Total Orders, Revenue, Success Rate, Dead Letters).
 
 ### Lista de Pedidos
 
-[![Orders List](screenshots/dashboard/orders_list.png)](screenshots/dashboard/orders_list.png)
+[![Orders List](orders_list.png)](orders_list.png)
 
 Tabela de pedidos com filtros funcionais, status badges e auto-refresh via HTMX.
 
 ### Timeline da Saga
 
-[![Order Timeline](screenshots/dashboard/order_timeline.png)](screenshots/dashboard/order_timeline.png)
+[![Order Timeline](order_timeline.png)](order_timeline.png)
 
 Timeline completa com trace de eventos da saga orquestrada (OrderCreated → StockReserved → PaymentProcessed → OrderConfirmed).
 
 ### Dead Letter Queue
 
-[![Dead Letters](screenshots/failure-scenarios/dead_letters.png)](screenshots/failure-scenarios/dead_letters.png)
+[![Dead Letters](dead_letters.png)](dead_letters.png)
 
 Interface de replay manual para mensagens falhadas com detalhes de erro.
 
 ### Observabilidade
 
-[![Grafana Dashboard](screenshots/observability/grafana_dashboard.png)](screenshots/observability/grafana_dashboard.png)
+[![Grafana Dashboard](grafana_dashboard.png)](grafana_dashboard.png)
 
 Dashboards provisionados com métricas de pedidos, pagamentos e estoque.
 
-[![Jaeger Trace](screenshots/observability/jaeger_trace.png)](screenshots/observability/jaeger_trace.png)
+[![Jaeger Trace](jaeger_trace.png)](jaeger_trace.png)
 
 Distributed tracing com OpenTelemetry mostrando spans completos da saga.
 
 ---
 
-**Mais screenshots**: Veja a pasta [screenshots/](screenshots/) para imagens adicionais e o [Guia de Screenshots](docs/SCREENSHOTS.md) para instruções de captura.
+**Guia de captura**: Consulte [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md) para instruções detalhadas de como capturar screenshots.
 
 ## 🎤 Como Fazer Demo para Entrevistas
 
